@@ -1,6 +1,11 @@
 from django.shortcuts import render
-from django.views import View
-from .models import Menu
+from django.template import loader
+from django.http import HttpResponse
 
-class MenuPageView(View):
-    template_name = 'orderapp/menu_page.html'
+def MenuPage(request):
+  template = loader.get_template('menu.html')
+  return HttpResponse(template.render())
+
+def CartPage(request):
+  template = loader.get_template('cart.html')
+  return HttpResponse(template.render())
