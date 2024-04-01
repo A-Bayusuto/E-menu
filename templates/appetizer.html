@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Appetizers</title>
+</head>
+<body>
+    <h1>Appetizers</h1>
+    {% for appetizer in appetizers %}
+        <h2>{{ appetizer.item }}</h2>
+        {% if appetizer.picture_address %}
+            <img src="{{ appetizer.picture_address }}" alt="{{ appetizer.item }}">
+        {% endif %}
+        <p>{{ appetizer.summary }}</p>
+        <p>Price: ${{ appetizer.price }}</p>
+    {% endfor %}
+</body>
+</html>
