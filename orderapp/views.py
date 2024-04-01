@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.template import loader
-from django.http import Http404, HttpResponse
+from django.http import Http404, HttpResponse, HttpResponseRedirect
+from django.urls import reverse
 from .models import Menu, OrderTable
 from datetime import datetime
 import os
@@ -52,59 +53,50 @@ def MenuPage(request):
     return render(request, 'menu.html', context)
 
 def add_to_cart(request):
+
     if request.method == 'POST':
         menu_id = request.POST.get('menu_id')
-        quantity = request.POST.get('quantity', 1)
-        current_date = datetime.now().date()
+        quantity = int(request.POST.get('quantity', 1))  # Ensure quantity is an integer
         menu_item = Menu.objects.get(pk=menu_id)
 
-        # Assuming you have the necessary information for OrderTable
-        # You may need to adjust this based on your actual models and logic
-        order_item = OrderTable.objects.create(
-            table_id=1,  # Example table_id, replace with actual value
-            supplier=menu_item.supplier,
-            menu=menu_item,
-            date=current_date,  # Replace with actual date object
-            order_id=0,  # Replace with actual order_id
-            qty=quantity,
-            total=menu_item.price * int(quantity),
-            order_status='Pending'  # Example order_status, replace with actual value
-        )
+        # Retrieve the existing cart items from the cookie or initialize an empty dictionary
+        cart_items = json.loads(request.COOKIES.get('cart_items', '{}'))
 
-        # Serialize the OrderTable object to JSON
-        order_item_data = {
-            'table_id': order_item.table_id,
-            'supplier_id': order_item.supplier_id,
-            'menu_id': order_item.menu_id,
-            'date_id': order_item.date_id,
-            'order_id': order_item.order_id,
-            'qty': order_item.qty,
-            'total': str(order_item.total),
-            'order_status': order_item.order_status,
-        }
-
-        # Retrieve the existing cart items from the cookie
-        cart_items = request.COOKIES.get('cart_items', '[]')
-
-        # Convert the JSON string to a Python list
-        cart_items = json.loads(cart_items)
-
-        # Add the new item to the list
-        cart_items.append(order_item_data)
-
-        # Convert the list back to a JSON string
+        # Add the new item to the cart items dictionary
+        cart_items[menu_id] = quantity
+        print('1', cart_items)
+        # Serialize the cart items dictionary to JSON
         cart_items_json = json.dumps(cart_items)
+        print('2', cart_items_json)
 
-        # Set the updated cookie with the serialized OrderTable data
-        response = HttpResponse("Added to Cart")
+        # Set the updated cart items as a cookie in the response
+        response = HttpResponseRedirect(reverse('cart'))
         response.set_cookie('cart_items', cart_items_json)
 
         return response
+    else:
+        # Return a simple response if the request method is not POST
+        return HttpResponse("Method not allowed", status=405)
     
   # TODO need to check largest order ID when finishing cart 
 
-    return redirect('cart')  # Assuming 'cart' is the name of your cart view
+
+
 
 def CartPage(request):
-  template = loader.get_template('cart.html')
-  return HttpResponse(template.render())
+    # Retrieve the cart_items from the cookie or initialize an empty dictionary
+    cart_items_json = request.COOKIES.get('cart_items', '{}')
+    cart_items = json.loads(cart_items_json)
+
+    # Pass the cart_items to the template context
+    context = {
+        'cart_items': cart_items
+    }
+
+    return render(request, 'cart.html', context)
+
+
+def clear_cart(request):
+    response = redirect('cart')
+    response.delete_cookie('cart_items')
+    return response

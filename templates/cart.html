@@ -1,16 +1,33 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cart</title>
 </head>
 <body>
-
-<h1>Cart</h1>
-
-<!-- Add a button -->
-<a>
-    <button type="button">Click me</button>
-</a>
-
+    <h1>Cart</h1>
+    <!-- Button to clear the cart -->
+    <form method="POST" action="{% url 'clear_cart' %}">
+        {% csrf_token %}
+        <button type="submit">Clear Cart</button>
+    </form>
+    <table>
+        <thead>
+            <tr>
+                <th>Menu ID</th>
+                <th>Quantity</th>
+            </tr>
+        </thead>
+        
+        <tbody>
+            {% for menu_id, quantity in cart_items.items %}
+                <tr>
+                    <td>{{ menu_id }}</td>
+                    <td>{{ quantity }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </body>
 </html>
