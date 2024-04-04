@@ -15,19 +15,52 @@
     <table>
         <thead>
             <tr>
-                <th>Menu ID</th>
+                <th>Order Name</th>
+                <th>Category</th>
+                <th>Price</th>
                 <th>Quantity</th>
+                <th>Total Price</th>
             </tr>
         </thead>
         
         <tbody>
-            {% for menu_id, quantity in cart_items.items %}
-                <tr>
-                    <td>{{ menu_id }}</td>
-                    <td>{{ quantity }}</td>
-                </tr>
+            {% for item in items %}
+            <tr>
+                <td>{{ item.name }}</td>
+                <td>{{ item.category }}</td>
+                <td>{{ item.price }}</td>
+                <td>{{ item.qty }}</td>
+                <td>{{ item.total_price }}</td>
+            </tr>
             {% endfor %}
         </tbody>
+        <tr>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th>Grand Total:<br><br>{{ grand_total }}</th>
+        </tr>
     </table>
+    <form method="POST" action="{% url 'checkout' %}">
+        {% csrf_token %}
+        <label for="table_number">Table Number:</label>
+        <input type="text" id="table_number" name="table_number">
+        <button type="submit">Checkout</button>
+    </form>
 </body>
 </html>
+
+<style>
+    table {
+        border-collapse: separate;
+        border-spacing: 0 10px; /* Adjust the vertical spacing between rows */
+        width: 100%;
+    }
+
+    th, td {
+        padding: 10px; /* Adjust the padding inside cells */
+        border: 1px solid #ddd;
+        text-align: left;
+    }
+</style>

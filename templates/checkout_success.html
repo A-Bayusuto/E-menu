@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Table</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Order Table</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Table ID</th>
+                <th>Supplier</th>
+                <th>Menu Item</th>
+                <th>Date</th>
+                <th>Order ID</th>
+                <th>Quantity</th>
+                <th>Total Price</th>
+                <th>Order Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+            <tr>
+                <td>{{ order.table_id }}</td>
+                <td>{{ order.supplier.name }}</td>
+                <td>{{ order.menu.item }}</td>
+                <td>{{ order.date.order_date }}</td>
+                <td>{{ order.order_id }}</td>
+                <td>{{ order.qty }}</td>
+                <td>{{ order.total }}</td>
+                <td>{{ order.order_status }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
