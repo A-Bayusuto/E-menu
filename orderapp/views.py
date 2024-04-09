@@ -6,7 +6,7 @@ from .models import Menu, OrderTable, OrderDate, Supplier
 from datetime import date, datetime, timedelta
 from django.utils.timezone import now
 from django.db.models import Sum
-from django.db import connection
+from django.db import connection, transaction
 from calendar import monthrange
 import os
 
@@ -129,26 +129,33 @@ def clear_cart(request):
     response.delete_cookie('cart_items')
     return response
 
+@transaction.atomic
 def checkout(request):
     if request.method == 'POST':
         table_number = request.POST.get('table_number')
 
+        # Fetch cart items from cookies
         cart_items_json = request.COOKIES.get('cart_items', '{}')
         cart_items = json.loads(cart_items_json)
 
-        # Fetch the first supplier from the database
+        # Get the first supplier from the database
         supplier = Supplier.objects.first()
 
         # Get current date and time
         current_datetime = datetime.now()
 
-        # Initialize variables
+        # Initialize list to hold order objects
         orders = []
         grand_total = 0
 
         # Iterate over cart items
         for key, value in cart_items.items():
-            menu_item = Menu.objects.get(code=key)
+            try:
+                menu_item = Menu.objects.get(code=key)
+            except Menu.DoesNotExist:
+                # Handle case where menu item does not exist
+                continue
+
             qty = value
 
             # Calculate total price for the item
@@ -165,12 +172,12 @@ def checkout(request):
             )
 
             # Create OrderTable object for the item
-            order_id = OrderTable.objects.filter(date__order_date=current_datetime.date()).count() + 1
+            order_id = OrderTable.objects.filter(order_date__order_date=current_datetime.date()).count() + 1
             order = OrderTable(
                 table_id=table_number,
                 supplier=supplier,
                 menu=menu_item,
-                date=order_date,
+                order_date=order_date,
                 order_id=order_id,
                 qty=qty,
                 total=total_price,
@@ -186,13 +193,13 @@ def checkout(request):
         response.delete_cookie('cart_items')
         return response
 
-    # Handle GET request or other cases
-    return redirect('cart')  # Redirect back to cart page
+    # Handle GET requests or other cases where method is not POST
+    return redirect('cart')
 
 def checkout_success(request):
     start_date = date.today() - timedelta(days=7)
     current_date = date.today()
-    orders = OrderTable.objects.filter(date__order_date__range=[start_date, current_date])    
+    orders = OrderTable.objects.filter(order_date__order_date__range=[start_date, current_date])    
     context = {
         'orders': orders
     }
@@ -203,11 +210,11 @@ def get_kpi_per_weeks():
     # Get KPIs for the last 52 weeks
     kpi_weeks = []
     current_date = now()
-    for i in range(1, 53):
+    for i in range(52, 0, -1):
         start_date = current_date - timedelta(days=current_date.weekday() + (i - 1) * 7)
         end_date = start_date + timedelta(days=6)
         weekly_sales = OrderTable.objects.filter(
-            date__order_date__range=[start_date, end_date]
+            order_date__order_date__range=[start_date, end_date]
         ).aggregate(total_sales=Sum('total'))['total_sales'] or 0
         kpi_weeks.append({
             'week': i,
@@ -215,13 +222,14 @@ def get_kpi_per_weeks():
             'end_date': end_date,
             'total_sales': weekly_sales
         })
+
     return kpi_weeks
 
 def get_kpi_per_months():
     # Get KPIs for the last 24 months
     kpi_months = []
     current_date = now()
-    for i in range(0, 24):
+    for i in range(23, -1, -1):
         target_date = current_date - timedelta(days=i*30)
         year = target_date.year
         month = target_date.month
@@ -229,7 +237,7 @@ def get_kpi_per_months():
         start_date = target_date.replace(day=1)
         end_date = target_date.replace(day=last_day)
         monthly_sales = OrderTable.objects.filter(
-            date__order_date__range=[start_date, end_date]
+            order_date__order_date__range=[start_date, end_date]
         ).aggregate(total_sales=Sum('total'))['total_sales'] or 0
         kpi_months.append({
             'month': month,
@@ -245,7 +253,7 @@ def get_kpi_per_years():
     years = OrderDate.objects.values_list('order_year', flat=True).distinct()
     for year in years:
         yearly_sales = OrderTable.objects.filter(
-            date__order_date__year=year
+            order_date__order_date__year=year
         ).aggregate(total_sales=Sum('total'))['total_sales'] or 0
         kpi_years.append({
             'year': year,
@@ -254,10 +262,14 @@ def get_kpi_per_years():
     return kpi_years
 
 def sales_analytics(request):
-    monthly_kpi = get_kpi_per_months()
     weekly_kpi = get_kpi_per_weeks()
+    monthly_kpi = get_kpi_per_months()
     yearly_kpi = get_kpi_per_years()
 
+    # print('1 :', weekly_kpi)
+    # print('2 :', monthly_kpi)
+    # print('3 :', yearly_kpi)    
+    
     context = {
         'monthly_kpi': monthly_kpi,
         'weekly_kpi': weekly_kpi,
@@ -266,50 +278,13 @@ def sales_analytics(request):
     return render(request, 'analytics_sales.html', context)
 
 
-# def get_menu_performance_per_week():
-#     # Get performance of each menu item for the current week based on quantity ordered
-#     start_date = now() - timedelta(days=now().weekday())
-#     end_date = start_date + timedelta(days=6)
-#     menu_performance = OrderTable.objects.filter(
-#         date__order_date__range=[start_date, end_date]
-#     ).values('menu__item').annotate(total_quantity=Sum('qty')).order_by('-total_quantity')
-#     return menu_performance
-
-# def get_menu_performance_per_month():
-#     # Get performance of each menu item for the current month based on quantity ordered
-#     current_date = now()
-#     start_date = current_date.replace(day=1)
-#     end_date = start_date.replace(day=1) + timedelta(days=32)
-#     menu_performance = OrderTable.objects.filter(
-#         date__order_date__range=[start_date, end_date]
-#     ).values('menu__item').annotate(total_quantity=Sum('qty')).order_by('-total_quantity')
-#     return menu_performance
-
-# def get_menu_performance_per_year():
-#     # Get performance of each menu item for the current year based on quantity ordered
-#     current_year = now().year
-#     menu_performance = OrderTable.objects.filter(
-#         date__order_date__year=current_year
-#     ).values('menu__item').annotate(total_quantity=Sum('qty')).order_by('-total_quantity')
-#     return menu_performance
-
 def get_menu_performance_per_week():
     # Get performance of each menu item for the current week based on quantity ordered
     start_date = now() - timedelta(days=now().weekday())
-    end_date = start_date + timedelta(days=7)
-    with connection.cursor() as cursor:
-        cursor.execute("""
-            SELECT menu_id, SUM(qty) as total_quantity 
-            FROM orderapp_ordertable 
-            WHERE date_id IN (
-                SELECT id 
-                FROM orderapp_orderdate 
-                WHERE order_date BETWEEN %s AND %s
-            )
-            GROUP BY menu_id 
-            ORDER BY total_quantity DESC
-        """, [start_date.date(), end_date.date()])
-        menu_performance = cursor.fetchall()
+    end_date = start_date + timedelta(days=6)
+    menu_performance = OrderTable.objects.filter(
+        order_date__order_date__range=[start_date, end_date]
+    ).values('menu__item').annotate(total_quantity=Sum('qty')).order_by('-total_quantity')
     return menu_performance
 
 def get_menu_performance_per_month():
@@ -317,44 +292,79 @@ def get_menu_performance_per_month():
     current_date = now()
     start_date = current_date.replace(day=1)
     end_date = start_date.replace(day=1) + timedelta(days=32)
-    with connection.cursor() as cursor:
-        cursor.execute("""
-            SELECT menu_id, SUM(qty) as total_quantity 
-            FROM orderapp_ordertable 
-            WHERE date_id IN (
-                SELECT id 
-                FROM orderapp_orderdate 
-                WHERE order_date BETWEEN %s AND %s
-            )
-            GROUP BY menu_id 
-            ORDER BY total_quantity DESC
-        """, [start_date.date(), end_date.date()])
-        menu_performance = cursor.fetchall()
+    menu_performance = OrderTable.objects.filter(
+        order_date__order_date__range=[start_date, end_date]
+    ).values('menu__item').annotate(total_quantity=Sum('qty')).order_by('-total_quantity')
     return menu_performance
 
 def get_menu_performance_per_year():
     # Get performance of each menu item for the current year based on quantity ordered
     current_year = now().year
-    with connection.cursor() as cursor:
-        cursor.execute("""
-            SELECT menu_id, SUM(qty) as total_quantity 
-            FROM orderapp_ordertable 
-            WHERE date_id IN (
-                SELECT id 
-                FROM orderapp_orderdate 
-                WHERE EXTRACT(YEAR FROM order_date) = %s
-            )
-            GROUP BY menu_id 
-            ORDER BY total_quantity DESC
-        """, [current_year])
-        menu_performance = cursor.fetchall()
+    menu_performance = OrderTable.objects.filter(
+        order_date__order_date__year=current_year
+    ).values('menu__item').annotate(total_quantity=Sum('qty')).order_by('-total_quantity')
     return menu_performance
 
+# def get_menu_performance_per_week():
+#     # Get performance of each menu item for the current week based on quantity ordered
+#     start_date = datetime.now() - timedelta(days=datetime.now().weekday())
+#     end_date = start_date + timedelta(days=6)
+#     query = """
+#         SELECT menu_id, SUM(qty) AS total_ordered
+#         FROM orderapp_ordertable
+#         WHERE order_date_id >= (SELECT date_id FROM orderapp_orderdate WHERE order_date = date_trunc('week', %s))
+#         AND order_date_id < (SELECT date_id FROM orderapp_orderdate WHERE order_date = date_trunc('week', %s) + interval '1 week')
+#         GROUP BY menu_id;
+#     """
+#     with connection.cursor() as cursor:
+#         cursor.execute(query, [start_date, end_date])
+#         menu_performance = cursor.fetchall()
+#     return menu_performance
+
+# def get_menu_performance_per_month():
+#     # Get performance of each menu item for the current month based on quantity ordered
+#     current_date = datetime.now()
+#     start_date = current_date.replace(day=1)
+#     end_date = start_date.replace(day=1) + timedelta(days=31)
+#     print([start_date, end_date])
+#     query = """
+#         SELECT menu_id, SUM(qty) AS total_ordered
+#         FROM orderapp_ordertable
+#         WHERE order_date_id >= (SELECT date_id FROM orderapp_orderdate WHERE EXTRACT(YEAR FROM order_date) = EXTRACT(YEAR FROM %s) AND EXTRACT(MONTH FROM order_date) = EXTRACT(MONTH FROM %s))
+#         AND order_date_id < (SELECT date_id FROM orderapp_orderdate WHERE EXTRACT(YEAR FROM order_date) = EXTRACT(YEAR FROM %s) AND EXTRACT(MONTH FROM order_date) = EXTRACT(MONTH FROM %s) + 1)
+#         GROUP BY menu_id;
+#     """
+#     with connection.cursor() as cursor:
+#         cursor.execute(query, [start_date, end_date])
+#         menu_performance = cursor.fetchall()
+#     return menu_performance
+
+# def get_menu_performance_per_year():
+#     # Get performance of each menu item for the current year based on quantity ordered
+#     current_year = datetime.now().year
+#     query = """
+#         SELECT menu_id, SUM(qty) AS total_ordered
+#         FROM orderapp_ordertable
+#         WHERE order_date_id >= (SELECT date_id FROM orderapp_orderdate WHERE EXTRACT(YEAR FROM order_date) = EXTRACT(YEAR FROM %s))
+#         AND order_date_id < (SELECT date_id FROM orderapp_orderdate WHERE EXTRACT(YEAR FROM order_date) = EXTRACT(YEAR FROM %s) + 1)
+    #     GROUP BY menu_id;
+    # """
+    # with connection.cursor() as cursor:
+    #     cursor.execute(query, [current_year])
+    #     menu_performance = cursor.fetchall()
+    # return menu_performance
+
+
 def menu_analytics(request):
+
     # Get menu performance data
     menu_performance_per_week = get_menu_performance_per_week()
     menu_performance_per_month = get_menu_performance_per_month()
     menu_performance_per_year = get_menu_performance_per_year()
+
+    print('1 :', menu_performance_per_week)
+    print('2 :', menu_performance_per_month)
+    print('3 :', menu_performance_per_year)
 
     # Pass data to the template context
     context = {
