@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Table</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Order Table</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Table ID</th>
+                <th>Supplier</th>
+                <th>Menu Item</th>
+                <th>Date</th>
+                <th>Order ID</th>
+                <th>Quantity</th>
+                <th>Total Price</th>
+                <th>Order Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+            <tr>
+                <td>{{ order.table_id }}</td>
+                <td>{{ order.supplier.name }}</td>
+                <td>{{ order.menu.item }}</td>
+                <td>{{ order.order_date.order_date }}</td>
+                <td>{{ order.order_id }}</td>
+                <td>{{ order.qty }}</td>
+                <td>{{ order.total }}</td>
+                <td>
+                    <form method="post" class="orderForm">
+                        {% csrf_token %}
+                        <input type="hidden" name="table_id" value="{{ order.table_id }}">
+                        <input type="hidden" name="supplier" value="{{ order.supplier.supplier_id }}">
+                        <input type="hidden" name="menu" value="{{ order.menu.code }}">
+                        <input type="hidden" name="order_date" value="{{ order.order_date.date_id }}">
+                        <select name="new_status">
+                            {% for status in form.order_status.field.choices %}
+                                <option value="{{ status.0 }}" {% if status.0 == order.order_status %}selected{% endif %}>{{ status.1 }}</option>
+                            {% endfor %}
+                        </select>
+                </td>
+                <td>
+                    <button type="submit">Update Status</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('.orderForm').submit(function(event) {
+            event.preventDefault(); // Prevent the default form submission
+            
+            // Get the form data
+            var formData = $(this).serialize();
+            
+            // Send AJAX request
+            $.ajax({
+                url: "{% url 'update_order_status' %}",
+                type: "POST",
+                data: formData,
+                success: function(response) {
+                    // Check if the response indicates success
+                    if (response.success) {
+                        // Reload the order list page
+                        window.location.reload();
+                    } else {
+                        // Handle error response, if needed
+                    }
+                },
+                error: function(xhr, errmsg, err) {
+                    // Handle error, if needed
+                }
+            });
+        });
+    });
+</script>

@@ -3,10 +3,12 @@ from django.template import loader
 from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from .models import Menu, OrderTable, OrderDate, Supplier
+from .forms import OrderStatusForm
 from datetime import date, datetime, timedelta
 from django.utils.timezone import now
 from django.db.models import Sum
 from django.db import connection, transaction
+from django.http import JsonResponse
 from calendar import monthrange
 import os
 
@@ -199,12 +201,54 @@ def checkout(request):
 def checkout_success(request):
     start_date = date.today() - timedelta(days=7)
     current_date = date.today()
-    orders = OrderTable.objects.filter(order_date__order_date__range=[start_date, current_date])    
+    orders = OrderTable.objects.filter(order_date__order_date__range=[start_date, current_date], order_status="Pending")    
     context = {
         'orders': orders
     }
     return render(request, 'checkout_success.html', context)
 
+def orderlist(request):
+    start_date = date.today() - timedelta(days=7)
+    current_date = date.today()
+    orders = OrderTable.objects.filter(
+        order_date__order_date__range=[start_date, current_date],
+        order_status="Pending"
+    )    
+    form = OrderStatusForm()  # Create an instance of the form
+    context = {
+        'orders': orders,
+        'form': form,
+    }
+    return render(request, 'orderlist.html', context)
+
+
+def update_order_status(request):
+    if request.method == 'POST' and request.is_ajax():
+        table_id = request.POST.get('table_id')
+        supplier_id = request.POST.get('supplier')
+        menu_id = request.POST.get('menu')
+        order_date = request.POST.get('order_date')
+        new_status = request.POST.get('new_status')
+
+        try:
+            # Get the order object based on the unique combination of fields
+            order = OrderTable.objects.get(
+                table_id=table_id,
+                supplier_id=supplier_id,
+                menu_id=menu_id,
+                order_date=order_date
+            )
+
+            # Update the order status
+            order.order_status = new_status
+            order.save()
+            # Return success response
+            return JsonResponse({'success': True})
+        except OrderTable.DoesNotExist:
+            return JsonResponse({'error': 'Order not found.'}, status=404)
+    else:
+        return JsonResponse({'error': 'Invalid request.'}, status=400)
+    
 
 def get_kpi_per_weeks():
     # Get KPIs for the last 52 weeks
@@ -362,9 +406,9 @@ def menu_analytics(request):
     menu_performance_per_month = get_menu_performance_per_month()
     menu_performance_per_year = get_menu_performance_per_year()
 
-    print('1 :', menu_performance_per_week)
-    print('2 :', menu_performance_per_month)
-    print('3 :', menu_performance_per_year)
+    # print('1 :', menu_performance_per_week)
+    # print('2 :', menu_performance_per_month)
+    # print('3 :', menu_performance_per_year)
 
     # Pass data to the template context
     context = {

@@ -35,6 +35,11 @@ class OrderDate(models.Model):
     
 
 class OrderTable(models.Model):
+    CATEGORY_CHOICES = [
+        ('Pending', 'Pending'),
+        ('Finished', 'Finished'),
+        ('Cancelled', 'Cancelled'),
+    ]
     table_id = models.IntegerField()
     supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE)
     menu = models.ForeignKey(Menu, on_delete=models.CASCADE)
@@ -42,7 +47,7 @@ class OrderTable(models.Model):
     order_id = models.IntegerField()
     qty = models.IntegerField()
     total = models.DecimalField(max_digits=10, decimal_places=2)
-    order_status = models.CharField(max_length=50, null=True, blank=True)
+    order_status = models.CharField(max_length=50, choices=CATEGORY_CHOICES, null=True, blank=True)
 
     class Meta:
         unique_together = ('table_id', 'supplier', 'menu', 'order_date', 'order_id')
