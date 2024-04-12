@@ -6,116 +6,126 @@
     <title>Menu Analytics</title>
     <!-- Include Chart.js library -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Apply styles to contain content within 75% of the screen */
+        .container {
+            max-width: 75%;
+            margin: 0 auto; /* Center the container */
+        }
+    </style>
 </head>
+{% include 'dashboard.html' %}
 <body>
-    <h1>Menu Analytics</h1>
+        <div class="container">
+        <h1>Menu Analytics</h1>
 
-    <h2>Menu Performance Per Week</h2>
-    <canvas id="weekChart" width="400" height="200"></canvas>
+        <h2>Menu Performance Per Week</h2>
+        <canvas id="weekChart" width="400" height="200"></canvas>
 
-    <h2>Menu Performance Per Month</h2>
-    <canvas id="monthChart" width="400" height="200"></canvas>
+        <h2>Menu Performance Per Month</h2>
+        <canvas id="monthChart" width="400" height="200"></canvas>
 
-    <h2>Menu Performance Per Year</h2>
-    <canvas id="yearChart" width="400" height="200"></canvas>
+        <h2>Menu Performance Per Year</h2>
+        <canvas id="yearChart" width="400" height="200"></canvas>
 
-    <script>
-        // Data for Menu Performance Per Week
-        var weekLabels = [];
-        var weekData = [];
-        {% for item in menu_performance_per_week %}
-            weekLabels.push("{{ item.menu__item }}");
-            weekData.push("{{ item.total_quantity }}");
-        {% endfor %}
+        <script>
+            // Data for Menu Performance Per Week
+            var weekLabels = [];
+            var weekData = [];
+            {% for item in menu_performance_per_week %}
+                weekLabels.push("{{ item.menu__item }}");
+                weekData.push("{{ item.total_quantity }}");
+            {% endfor %}
 
-        // Data for Menu Performance Per Month
-        var monthLabels = [];
-        var monthData = [];
-        {% for item in menu_performance_per_month %}
-            monthLabels.push("{{ item.menu__item }}");
-            monthData.push("{{ item.total_quantity }}");
-        {% endfor %}
+            // Data for Menu Performance Per Month
+            var monthLabels = [];
+            var monthData = [];
+            {% for item in menu_performance_per_month %}
+                monthLabels.push("{{ item.menu__item }}");
+                monthData.push("{{ item.total_quantity }}");
+            {% endfor %}
 
-        // Data for Menu Performance Per Year
-        var yearLabels = [];
-        var yearData = [];
-        {% for item in menu_performance_per_year %}
-            yearLabels.push("{{ item.menu__item }}");
-            yearData.push("{{ item.total_quantity }}");
-        {% endfor %}
+            // Data for Menu Performance Per Year
+            var yearLabels = [];
+            var yearData = [];
+            {% for item in menu_performance_per_year %}
+                yearLabels.push("{{ item.menu__item }}");
+                yearData.push("{{ item.total_quantity }}");
+            {% endfor %}
 
-        // Create charts
-        var weekCtx = document.getElementById('weekChart').getContext('2d');
-        var weekChart = new Chart(weekCtx, {
-            type: 'bar',
-            data: {
-                labels: weekLabels,
-                datasets: [{
-                    label: 'Quantity',
-                    data: weekData,
-                    backgroundColor: 'rgba(54, 162, 235, 0.5)',
-                    borderColor: 'rgba(54, 162, 235, 1)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                scales: {
-                    yAxes: [{
-                        ticks: {
-                            beginAtZero: true
-                        }
+            // Create charts
+            var weekCtx = document.getElementById('weekChart').getContext('2d');
+            var weekChart = new Chart(weekCtx, {
+                type: 'bar',
+                data: {
+                    labels: weekLabels,
+                    datasets: [{
+                        label: 'Quantity',
+                        data: weekData,
+                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
                     }]
+                },
+                options: {
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero: true
+                            }
+                        }]
+                    }
                 }
-            }
-        });
+            });
 
-        var monthCtx = document.getElementById('monthChart').getContext('2d');
-        var monthChart = new Chart(monthCtx, {
-            type: 'bar',
-            data: {
-                labels: monthLabels,
-                datasets: [{
-                    label: 'Quantity',
-                    data: monthData,
-                    backgroundColor: 'rgba(255, 99, 132, 0.5)',
-                    borderColor: 'rgba(255, 99, 132, 1)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                scales: {
-                    yAxes: [{
-                        ticks: {
-                            beginAtZero: true
-                        }
+            var monthCtx = document.getElementById('monthChart').getContext('2d');
+            var monthChart = new Chart(monthCtx, {
+                type: 'bar',
+                data: {
+                    labels: monthLabels,
+                    datasets: [{
+                        label: 'Quantity',
+                        data: monthData,
+                        backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 1
                     }]
+                },
+                options: {
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero: true
+                            }
+                        }]
+                    }
                 }
-            }
-        });
+            });
 
-        var yearCtx = document.getElementById('yearChart').getContext('2d');
-        var yearChart = new Chart(yearCtx, {
-            type: 'bar',
-            data: {
-                labels: yearLabels,
-                datasets: [{
-                    label: 'Quantity',
-                    data: yearData,
-                    backgroundColor: 'rgba(75, 192, 192, 0.5)',
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                scales: {
-                    yAxes: [{
-                        ticks: {
-                            beginAtZero: true
-                        }
+            var yearCtx = document.getElementById('yearChart').getContext('2d');
+            var yearChart = new Chart(yearCtx, {
+                type: 'bar',
+                data: {
+                    labels: yearLabels,
+                    datasets: [{
+                        label: 'Quantity',
+                        data: yearData,
+                        backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
                     }]
+                },
+                options: {
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero: true
+                            }
+                        }]
+                    }
                 }
-            }
-        });
-    </script>
+            });
+        </script>
+    </div>
 </body>
 </html>

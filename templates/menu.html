@@ -21,6 +21,10 @@
             .tab {
                 display: none;
             }
+            .container {
+            max-width: 75%;
+            margin: 0 auto; /* Center the container */
+        }
         </style>
         <script>
             function showTab(category) {
@@ -35,85 +39,87 @@
             }
         </script>
     </head>
+    {% include 'dashboard.html' %}
     <body>
+    <div class="container">
 
-    <h1>Menu</h1>
+        <h1>Menu</h1>
 
-    <!-- Navigation tabs -->
-    <button onclick="showTab('appetizer')">Appetizers</button>
-    <button onclick="showTab('main_course')">Main Course</button>
-    <button onclick="showTab('dessert')">Dessert</button>
-    <button onclick="showTab('drink')">Drinks</button>
+        <!-- Navigation tabs -->
+        <button onclick="showTab('appetizer')">Appetizers</button>
+        <button onclick="showTab('main_course')">Main Course</button>
+        <button onclick="showTab('dessert')">Dessert</button>
+        <button onclick="showTab('drink')">Drinks</button>
 
-    <!-- Tab content for each category -->
-    <div id="appetizer" class="tab">
-        <h2>Appetizers</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Code</th>
-                    <th>Item</th>
-                    <th>Price</th>
-                    <th>Summary</th>
-                    <th>Picture Address</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for appetizer in appetizers %}
-                <tr>
-                    <td>{{ appetizer.code }}</td>
-                    <td>{{ appetizer.item }}</td>
-                    <td>{{ appetizer.price }}</td>
-                    <td>{{ appetizer.summary }}</td>
-                    <td><img src="{% static appetizer.picture_address %}" alt="{{ appetizer.item }}"></td>
-                    <td>
-                        <form method="POST" action="{% url 'add_to_cart' %}">
-                            {% csrf_token %}
-                            <input type="hidden" name="menu_id" value="{{ appetizer.pk }}">
-                            <select name="quantity">
-                                {% for quantity in quantities %}
-                                <option value="{{ quantity }}">{{ quantity }}</option>
-                                {% endfor %}
-                            </select>
-                            <button type="submit">Add to Cart</button>
-                        </form>
-                    </td>
-                </tr>
+        <!-- Tab content for each category -->
+        <div id="appetizer" class="tab">
+            <h2>Appetizers</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Item</th>
+                        <th>Price</th>
+                        <th>Summary</th>
+                        <th>Picture Address</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for appetizer in appetizers %}
+                    <tr>
+                        <td>{{ appetizer.code }}</td>
+                        <td>{{ appetizer.item }}</td>
+                        <td>{{ appetizer.price }}</td>
+                        <td>{{ appetizer.summary }}</td>
+                        <td><img src="{% static appetizer.picture_address %}" alt="{{ appetizer.item }}"></td>
+                        <td>
+                            <form method="POST" action="{% url 'add_to_cart' %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="menu_id" value="{{ appetizer.pk }}">
+                                <select name="quantity">
+                                    {% for quantity in quantities %}
+                                    <option value="{{ quantity }}">{{ quantity }}</option>
+                                    {% endfor %}
+                                </select>
+                                <button type="submit">Add to Cart</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div id="main_course" class="tab">
+            <h2>Main Course</h2>
+            <table>
+                <!-- Table structure remains the same -->
+                {% for main_course in main_courses %}
+                    <!-- Rows for main courses -->
                 {% endfor %}
-            </tbody>
-        </table>
-    </div>
+            </table>
+        </div>
 
-    <div id="main_course" class="tab">
-        <h2>Main Course</h2>
-        <table>
-            <!-- Table structure remains the same -->
-            {% for main_course in main_courses %}
-                <!-- Rows for main courses -->
-            {% endfor %}
-        </table>
-    </div>
+        <div id="dessert" class="tab">
+            <h2>Desserts</h2>
+            <table>
+                <!-- Table structure remains the same -->
+                {% for dessert in desserts %}
+                    <!-- Rows for desserts -->
+                {% endfor %}
+            </table>
+        </div>
 
-    <div id="dessert" class="tab">
-        <h2>Desserts</h2>
-        <table>
-            <!-- Table structure remains the same -->
-            {% for dessert in desserts %}
-                <!-- Rows for desserts -->
-            {% endfor %}
-        </table>
+        <div id="drink" class="tab">
+            <h2>Drinks</h2>
+            <table>
+                <!-- Table structure remains the same -->
+                {% for drink in drinks %}
+                    <!-- Rows for drinks -->
+                {% endfor %}
+            </table>
+        </div>
     </div>
-
-    <div id="drink" class="tab">
-        <h2>Drinks</h2>
-        <table>
-            <!-- Table structure remains the same -->
-            {% for drink in drinks %}
-                <!-- Rows for drinks -->
-            {% endfor %}
-        </table>
-    </div>
-
     </body>
 </html>
