@@ -50,7 +50,8 @@ def MenuPage(request):
     desserts = Menu.objects.filter(category='Dessert')
     drinks = Menu.objects.filter(category='Drink')
     quantities = range(1, 21) 
-
+    for x in appetizers:
+        print(x.picture_address)
     context = {
         'appetizers': appetizers,
         'main_courses': main_courses,
@@ -212,7 +213,7 @@ def orderlist(request):
     current_date = date.today()
     orders = OrderTable.objects.filter(
         order_date__order_date__range=[start_date, current_date],
-        order_status="Pending"
+        # order_status="Pending"
     )    
     form = OrderStatusForm()  # Create an instance of the form
     context = {

@@ -23,7 +23,11 @@
 {% include 'dashboard.html' %}
 <body>
     <h1>Order Table</h1>
-    <table>
+    <button onclick="getPending()">Pending</button>
+    <button onclick="getFinished()">Finished</button>
+    <button onclick="getCancelled()">Cancelled</button>
+    <h1></h1>
+    <table id="OrderTable">
         <thead>
             <tr>
                 <th>Table ID</th>
@@ -47,6 +51,7 @@
                 <td>{{ order.order_id }}</td>
                 <td>{{ order.qty }}</td>
                 <td>{{ order.total }}</td>
+                <t type="hidden" name="order_status">{{ order.order_status }}</t>
                 <td>
                     <form method="post" class="orderForm">
                         {% csrf_token %}
@@ -100,5 +105,37 @@
                 }
             });
         });
+    });
+
+    function filterTable(filterBy) {
+    // Get all table rows
+        var tableBody = document.getElementById("OrderTable").getElementsByTagName("tbody")[0];
+        var rows = tableBody.getElementsByTagName("tr");
+
+        // Loop through all rows
+        for (var i = 0; i < rows.length; i++) {
+            var row = rows[i];
+            var statusCell = row.getElementsByTagName("td")[7]; // Assuming order status is in the 8th column (index 7)
+
+            // Check if status matches the filter value
+            if (statusCell.textContent.trim() === filterBy) {
+            row.style.display = ""; // Show the row if it matches the filter
+            } else {
+            row.style.display = "none"; // Hide the row if it doesn't match
+            }
+        }
+    }
+
+    // Call the filter function for each button click
+    document.getElementById("getPending").addEventListener("click", function() {
+    filterTable("Pending");
+    });
+
+    document.getElementById("getFinished").addEventListener("click", function() {
+    filterTable("Finished");
+    });
+
+    document.getElementById("getCancelled").addEventListener("click", function() {
+    filterTable("Cancelled");
     });
 </script>

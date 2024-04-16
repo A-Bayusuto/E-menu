@@ -86,7 +86,7 @@
                         <td>{{ appetizer.item }}</td>
                         <td>{{ appetizer.price }}</td>
                         <td>{{ appetizer.summary }}</td>
-                        <td><img src="{% static appetizer.picture_address %}" alt="{{ appetizer.item }}"></td>
+                        <td><img src="{{ appetizer.picture_address.url }}" alt="{{ appetizer.item }}"></td>
                         <td>
                             <form method="POST" action="{% url 'add_to_cart' %}">
                                 {% csrf_token %}
