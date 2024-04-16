@@ -37,6 +37,12 @@
                 // Show the selected tab
                 document.getElementById(category.toLowerCase()).style.display = "block";
             }
+
+                    // Function to handle form submission and set table number in cookie
+            function setTableNumber() {
+                var tableNumber = document.getElementById("table-number").value;
+                document.cookie = "tableNumber=" + tableNumber;
+            }
         </script>
     </head>
     {% include 'dashboard.html' %}
@@ -45,6 +51,14 @@
 
         <h1>Menu</h1>
 
+        <form class="table-form">
+            <label for="table-number">Table Number:</label>
+            <input type="text" id="table-number" name="table-number">
+            <button type="button" onclick="setTableNumber()">Save Table Number</button>
+        </form>
+
+        <br>
+        <br>
         <!-- Navigation tabs -->
         <button onclick="showTab('appetizer')">Appetizers</button>
         <button onclick="showTab('main_course')">Main Course</button>
