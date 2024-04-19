@@ -27,6 +27,35 @@
         }
         </style>
         <script>
+            // Function to show the Main Course tab by default
+            window.onload = function() {
+                // Show the Main Course tab
+                document.getElementById('main_course').style.display = "block";
+
+                // Hide other tabs
+                var tabs = document.getElementsByClassName("tab");
+                for (var i = 0; i < tabs.length; i++) {
+                    if (tabs[i].id !== 'main_course') {
+                        tabs[i].style.display = "none";
+                    }
+                }
+            };
+
+
+            // Function to retrieve a cookie value by name
+            function getCookie(cookieName) {
+                var name = cookieName + "=";
+                var decodedCookie = decodeURIComponent(document.cookie);
+                var cookieArray = decodedCookie.split(';');
+                for(var i = 0; i < cookieArray.length; i++) {
+                    var cookie = cookieArray[i].trim();
+                    if (cookie.indexOf(name) === 0) {
+                        return cookie.substring(name.length, cookie.length);
+                    }
+                }
+                return null;
+            }
+
             function showTab(category) {
                 // Hide all tabs
                 var tabs = document.getElementsByClassName("tab");
@@ -47,11 +76,11 @@
             function setSupplierCookie() {
                 var selectElement = document.getElementById('supplier');
                 var selectedIndex = selectElement.selectedIndex;
-                console.log("Selected Index:", selectedIndex);
+                // console.log("Selected Index:", selectedIndex);
                 var selectedOption = selectElement.options[selectedIndex];
-                console.log("Selected Option:", selectedOption);
+                // console.log("Selected Option:", selectedOption);
                 var selectedSupplierId = selectedOption.value;
-                console.log("Selected Supplier ID:", selectedSupplierId);
+                // console.log("Selected Supplier ID:", selectedSupplierId);
                 document.cookie = "selected_supplier=" + selectedSupplierId;
                 // Reload the page to apply the filter based on the selected supplier
                 window.location.reload();
@@ -72,6 +101,11 @@
             {% endfor %}
         </select>
         <button onclick="setSupplierCookie()">Filter</button>
+
+        <br>
+        <br>
+
+        <h1 id="supplier-name"> {{ current_name }} </h1>
 
         <br>
         <br>

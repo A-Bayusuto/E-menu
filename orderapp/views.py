@@ -45,18 +45,38 @@ def appetizer(request):
 
 def MenuPage(request):
     # Retrieve all suppliers
-    suppliers = Supplier.objects.all()
+    suppliers = list(Supplier.objects.all()) 
+    suppliers.append({'supplier_id': '0', 'name': 'All'})
     quantities = range(1, 21)
 
     # Retrieve selected supplier ID from the cookie
     s_id = request.COOKIES.get('selected_supplier')
 
-    if s_id:
+    if int(s_id) == 0:
+        appetizers = Menu.objects.filter(category='Appetizer')
+        main_courses = Menu.objects.filter(category='Main Course')
+        desserts = Menu.objects.filter(category='Dessert')
+        drinks = Menu.objects.filter(category='Drink')
+        current_name = "All"
+        context = {
+            'appetizers': appetizers,
+            'main_courses': main_courses,
+            'desserts': desserts,
+            'drinks': drinks,
+            'quantities': quantities,
+            'suppliers': suppliers,
+            'current_name' : current_name,
+        }
+        return render(request, 'menu.html', context)
+
+    elif s_id:
         # If no supplier is selected (cookie not set), show all menu items without redirecting
         appetizers = Menu.objects.filter(category='Appetizer', supplier_id= s_id)
         main_courses = Menu.objects.filter(category='Main Course', supplier_id= s_id)
         desserts = Menu.objects.filter(category='Dessert', supplier_id= s_id)
         drinks = Menu.objects.filter(category='Drink', supplier_id= s_id)
+        current_supplier = Supplier.objects.get(supplier_id=s_id)
+        current_name = current_supplier.name
 
         context = {
             'appetizers': appetizers,
@@ -65,7 +85,9 @@ def MenuPage(request):
             'drinks': drinks,
             'quantities': quantities,
             'suppliers': suppliers,
+            'current_name' : current_name,
         }
+        return render(request, 'menu.html', context)
 
     else:
         # If no supplier is selected (cookie not set), show all menu items without redirecting
@@ -73,6 +95,7 @@ def MenuPage(request):
         main_courses = Menu.objects.filter(category='Main Course')
         desserts = Menu.objects.filter(category='Dessert')
         drinks = Menu.objects.filter(category='Drink')
+        current_name = "All"
 
         context = {
             'appetizers': appetizers,
@@ -81,9 +104,11 @@ def MenuPage(request):
             'drinks': drinks,
             'quantities': quantities,
             'suppliers': suppliers,
+            'current_name' : current_name,
         }
+        return render(request, 'menu.html', context)
 
-    return render(request, 'menu.html', context)
+    
 
 
 
