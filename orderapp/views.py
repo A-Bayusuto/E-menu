@@ -111,23 +111,27 @@ def MenuPage(request):
     
 
 
-
 def add_to_cart(request):
-
     if request.method == 'POST':
         menu_id = request.POST.get('menu_id')
         quantity = int(request.POST.get('quantity', 1))  # Ensure quantity is an integer
         menu_item = Menu.objects.get(pk=menu_id)
 
         # Retrieve the existing cart items from the cookie or initialize an empty dictionary
-        cart_items = json.loads(request.COOKIES.get('cart_items', '{}'))
+        cart_items_json = request.COOKIES.get('cart_items', '{}')
+        cart_items = json.loads(cart_items_json)
 
-        # Add the new item to the cart items dictionary
-        cart_items[menu_id] = quantity
-        # print('1', cart_items)
+        # Check if the menu_id already exists in the cart
+        if menu_id in cart_items:
+            # Menu item already exists in the cart, update the quantity
+            new_quanitity = quantity + int(cart_items[menu_id])
+            cart_items[menu_id] = new_quanitity
+        else:
+            # Add the new item to the cart items dictionary
+            cart_items[menu_id] = quantity
+
         # Serialize the cart items dictionary to JSON
         cart_items_json = json.dumps(cart_items)
-        # print('2', cart_items_json)
 
         # Set the updated cart items as a cookie in the response
         response = HttpResponseRedirect(reverse('cart'))
