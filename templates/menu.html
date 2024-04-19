@@ -38,11 +38,25 @@
                 document.getElementById(category.toLowerCase()).style.display = "block";
             }
 
-                    // Function to handle form submission and set table number in cookie
+            // Function to handle form submission and set table number in cookie
             function setTableNumber() {
                 var tableNumber = document.getElementById("table-number").value;
                 document.cookie = "tableNumber=" + tableNumber;
             }
+
+            function setSupplierCookie() {
+                var selectElement = document.getElementById('supplier');
+                var selectedIndex = selectElement.selectedIndex;
+                console.log("Selected Index:", selectedIndex);
+                var selectedOption = selectElement.options[selectedIndex];
+                console.log("Selected Option:", selectedOption);
+                var selectedSupplierId = selectedOption.value;
+                console.log("Selected Supplier ID:", selectedSupplierId);
+                document.cookie = "selected_supplier=" + selectedSupplierId;
+                // Reload the page to apply the filter based on the selected supplier
+                window.location.reload();
+            }
+            
         </script>
     </head>
     {% include 'dashboard.html' %}
@@ -51,11 +65,13 @@
 
         <h1>Menu</h1>
 
-        <form class="table-form">
-            <label for="table-number">Table Number:</label>
-            <input type="text" id="table-number" name="table-number">
-            <button type="button" onclick="setTableNumber()">Save Table Number</button>
-        </form>
+        <label for="supplier">Select Supplier:</label>
+        <select name="supplier" id="supplier">
+            {% for supplier in suppliers %}
+            <option value="{{ supplier.supplier_id }}">{{ supplier.name }}</option>
+            {% endfor %}
+        </select>
+        <button onclick="setSupplierCookie()">Filter</button>
 
         <br>
         <br>

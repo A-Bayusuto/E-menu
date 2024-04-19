@@ -44,23 +44,48 @@ def appetizer(request):
 
 
 def MenuPage(request):
-    # Retrieve menu items from the database
-    appetizers = Menu.objects.filter(category='Appetizer')
-    main_courses = Menu.objects.filter(category='Main Course')
-    desserts = Menu.objects.filter(category='Dessert')
-    drinks = Menu.objects.filter(category='Drink')
-    quantities = range(1, 21) 
-    for x in appetizers:
-        print(x.picture_address)
-    context = {
-        'appetizers': appetizers,
-        'main_courses': main_courses,
-        'desserts': desserts,
-        'drinks': drinks,
-        'quantities': quantities,
-    }
+    # Retrieve all suppliers
+    suppliers = Supplier.objects.all()
+    quantities = range(1, 21)
+
+    # Retrieve selected supplier ID from the cookie
+    s_id = request.COOKIES.get('selected_supplier')
+
+    if s_id:
+        # If no supplier is selected (cookie not set), show all menu items without redirecting
+        appetizers = Menu.objects.filter(category='Appetizer', supplier_id= s_id)
+        main_courses = Menu.objects.filter(category='Main Course', supplier_id= s_id)
+        desserts = Menu.objects.filter(category='Dessert', supplier_id= s_id)
+        drinks = Menu.objects.filter(category='Drink', supplier_id= s_id)
+
+        context = {
+            'appetizers': appetizers,
+            'main_courses': main_courses,
+            'desserts': desserts,
+            'drinks': drinks,
+            'quantities': quantities,
+            'suppliers': suppliers,
+        }
+
+    else:
+        # If no supplier is selected (cookie not set), show all menu items without redirecting
+        appetizers = Menu.objects.filter(category='Appetizer')
+        main_courses = Menu.objects.filter(category='Main Course')
+        desserts = Menu.objects.filter(category='Dessert')
+        drinks = Menu.objects.filter(category='Drink')
+
+        context = {
+            'appetizers': appetizers,
+            'main_courses': main_courses,
+            'desserts': desserts,
+            'drinks': drinks,
+            'quantities': quantities,
+            'suppliers': suppliers,
+        }
 
     return render(request, 'menu.html', context)
+
+
 
 def add_to_cart(request):
 
