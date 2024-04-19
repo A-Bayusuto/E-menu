@@ -213,7 +213,7 @@ def orderlist(request):
     current_date = date.today()
     orders = OrderTable.objects.filter(
         order_date__order_date__range=[start_date, current_date],
-        # order_status="Pending"
+        order_status="Pending"
     )    
     form = OrderStatusForm()  # Create an instance of the form
     context = {

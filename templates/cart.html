@@ -43,7 +43,7 @@
             <th>Grand Total:<br><br>{{ grand_total }}</th>
         </tr>
     </table>
-    <form method="POST" action="{% url 'checkout' %}">
+    <form id="checkoutForm" method="POST" action="{% url 'checkout' %}">
         {% csrf_token %}
         <label for="table_number">Table Number:</label>
         <input type="text" id="table_number" name="table_number">
@@ -51,6 +51,16 @@
     </form>
 </body>
 </html>
+
+<script>
+    document.getElementById('checkoutForm').addEventListener('submit', function(event) {
+        var tableNumber = document.getElementById('table_number').value;
+        if (!tableNumber) {
+            event.preventDefault();
+            alert('Please provide a table number.');
+        }
+    });
+</script>
 
 <style>
     table {
