@@ -52,7 +52,7 @@ def MenuPage(request):
     # Retrieve selected supplier ID from the cookie
     s_id = request.COOKIES.get('selected_supplier')
 
-    if int(s_id) == 0:
+    if s_id == None or int(s_id) == 0:
         appetizers = Menu.objects.filter(category='Appetizer')
         main_courses = Menu.objects.filter(category='Main Course')
         desserts = Menu.objects.filter(category='Dessert')
