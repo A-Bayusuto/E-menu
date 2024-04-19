@@ -26,7 +26,9 @@
     <button onclick="getPending()">Pending</button>
     <button onclick="getFinished()">Finished</button>
     <button onclick="getCancelled()">Cancelled</button>
+
     <h1></h1>
+    
     <table id="OrderTable">
         <thead>
             <tr>
@@ -51,7 +53,7 @@
                 <td>{{ order.order_id }}</td>
                 <td>{{ order.qty }}</td>
                 <td>{{ order.total }}</td>
-                <t type="hidden" name="order_status">{{ order.order_status }}</t>
+                <input type="hidden" name="order_status" value="{{ order.order_status }}">
                 <td>
                     <form method="post" class="orderForm">
                         {% csrf_token %}

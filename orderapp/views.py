@@ -192,7 +192,7 @@ def checkout(request):
         cart_items = json.loads(cart_items_json)
 
         # Get the first supplier from the database
-        supplier = Supplier.objects.first()
+        # supplier = Supplier.objects.first()
 
         # Get current date and time
         current_datetime = datetime.now()
@@ -210,7 +210,6 @@ def checkout(request):
                 continue
 
             qty = value
-
             # Calculate total price for the item
             total_price = float(menu_item.price) * qty
             grand_total += total_price
@@ -228,7 +227,7 @@ def checkout(request):
             order_id = OrderTable.objects.filter(order_date__order_date=current_datetime.date()).count() + 1
             order = OrderTable(
                 table_id=table_number,
-                supplier=supplier,
+                supplier=menu_item.supplier,
                 menu=menu_item,
                 order_date=order_date,
                 order_id=order_id,
