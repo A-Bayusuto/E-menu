@@ -12,7 +12,7 @@
             th, td {
                 border: 1px solid #dddddd;
                 text-align: left;
-                padding: 8px;
+                padding: 15px;
             }
             th {
                 background-color: #f2f2f2;
@@ -24,6 +24,12 @@
             .container {
             max-width: 75%;
             margin: 0 auto; /* Center the container */
+        }
+
+        
+        img.food {
+        height: 35%;
+        width: 45%;
         }
         </style>
         <script>
@@ -125,7 +131,7 @@
                         <th>Item</th>
                         <th>Price</th>
                         <th>Summary</th>
-                        <th>Picture Address</th>
+                        <th>Picture</th>
                         <th></th>
                     </tr>
                 </thead>
@@ -136,7 +142,7 @@
                         <td>{{ appetizer.item }}</td>
                         <td>{{ appetizer.price }}</td>
                         <td>{{ appetizer.summary }}</td>
-                        <td><img src="{{ appetizer.picture_address.url }}" alt="{{ appetizer.item }}"></td>
+                        <td><img src="{{ appetizer.picture_address.url }}" alt="{{ appetizer.item }}" class="food"/></td>
                         <td>
                             <form method="POST" action="{% url 'add_to_cart' %}">
                                 {% csrf_token %}
@@ -146,6 +152,7 @@
                                     <option value="{{ quantity }}">{{ quantity }}</option>
                                     {% endfor %}
                                 </select>
+                                <br>
                                 <button type="submit">Add to Cart</button>
                             </form>
                         </td>
@@ -164,7 +171,7 @@
                         <th>Item</th>
                         <th>Price</th>
                         <th>Summary</th>
-                        <th>Picture Address</th>
+                        <th>Picture</th>
                         <th></th>
                     </tr>
                 </thead>
@@ -176,16 +183,17 @@
                         <td>{{ main_course.item }}</td>
                         <td>{{ main_course.price }}</td>
                         <td>{{ main_course.summary }}</td>
-                        <td><img src="{{ main_course.picture_address.url }}" alt="{{ main_course.item }}"></td>
+                        <td><img src="{{ main_course.picture_address.url }}" alt="{{ main_course.item }}" class="food"/></td>
                         <td>
                             <form method="POST" action="{% url 'add_to_cart' %}">
                                 {% csrf_token %}
                                 <input type="hidden" name="menu_id" value="{{ main_course.pk }}">
-                                <select name="quantity">
+                                <select name="quantity" style="margin-bottom: 12px;">
                                     {% for quantity in quantities %}
                                     <option value="{{ quantity }}">{{ quantity }}</option>
                                     {% endfor %}
                                 </select>
+                                <br>
                                 <button type="submit">Add to Cart</button>
                             </form>
                         </td>
@@ -204,7 +212,7 @@
                         <th>Item</th>
                         <th>Price</th>
                         <th>Summary</th>
-                        <th>Picture Address</th>
+                        <th>Picture</th>
                         <th></th>
                     </tr>
                 </thead>
@@ -216,7 +224,7 @@
                         <td>{{ dessert.item }}</td>
                         <td>{{ dessert.price }}</td>
                         <td>{{ dessert.summary }}</td>
-                        <td><img src="{{ dessert.picture_address.url }}" alt="{{ dessert.item }}"></td>
+                        <td><img src="{{ dessert.picture_address.url }}" alt="{{ dessert.item }}" class="food"/></td>
                         <td>
                             <form method="POST" action="{% url 'add_to_cart' %}">
                                 {% csrf_token %}
@@ -226,6 +234,7 @@
                                     <option value="{{ quantity }}">{{ quantity }}</option>
                                     {% endfor %}
                                 </select>
+                                <br>
                                 <button type="submit">Add to Cart</button>
                             </form>
                         </td>
@@ -244,7 +253,7 @@
                         <th>Item</th>
                         <th>Price</th>
                         <th>Summary</th>
-                        <th>Picture Address</th>
+                        <th>Picture</th>
                         <th></th>
                     </tr>
                 </thead>
@@ -256,7 +265,7 @@
                         <td>{{ drink.item }}</td>
                         <td>{{ drink.price }}</td>
                         <td>{{ drink.summary }}</td>
-                        <td><img src="{{ drink.picture_address.url }}" alt="{{ drink.item }}"></td>
+                        <td><img src="{{ drink.picture_address.url }}" alt="{{ drink.item }}" class="food"/></td>
                         <td>
                             <form method="POST" action="{% url 'add_to_cart' %}">
                                 {% csrf_token %}
@@ -266,6 +275,7 @@
                                     <option value="{{ quantity }}">{{ quantity }}</option>
                                     {% endfor %}
                                 </select>
+                                <br>
                                 <button type="submit">Add to Cart</button>
                             </form>
                         </td>
