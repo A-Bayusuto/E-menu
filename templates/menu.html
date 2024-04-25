@@ -4,7 +4,15 @@
     <head>
         <title>Menu Page</title>
         <style>
-            /* Your existing styles remain unchanged */
+            
+            .content-container {
+                text-align: center; /* Center align all content */
+                margin: 0 auto; /* Center the container horizontally */
+                width: 75%; /* Set the width of the container */
+                padding: 20px; /* Add some padding for better spacing */
+                }
+
+
             table {
                 border-collapse: collapse;
                 width: 100%;
@@ -97,29 +105,30 @@
     {% include 'dashboard.html' %}
     <body>
     <div class="container">
+        <div class="content-container">
+            <h1>Menu</h1>
 
-        <h1>Menu</h1>
+            <label for="supplier">Select Supplier:</label>
+            <select name="supplier" id="supplier">
+                {% for supplier in suppliers %}
+                <option value="{{ supplier.supplier_id }}">{{ supplier.name }}</option>
+                {% endfor %}
+            </select>
+            <button onclick="setSupplierCookie()">Filter</button>
 
-        <label for="supplier">Select Supplier:</label>
-        <select name="supplier" id="supplier">
-            {% for supplier in suppliers %}
-            <option value="{{ supplier.supplier_id }}">{{ supplier.name }}</option>
-            {% endfor %}
-        </select>
-        <button onclick="setSupplierCookie()">Filter</button>
+            <br>
+            <br>
 
-        <br>
-        <br>
+            <h1 id="supplier-name"> {{ current_name }} </h1>
 
-        <h1 id="supplier-name"> {{ current_name }} </h1>
-
-        <br>
-        <br>
-        <!-- Navigation tabs -->
-        <button onclick="showTab('appetizer')">Appetizers</button>
-        <button onclick="showTab('main_course')">Main Course</button>
-        <button onclick="showTab('dessert')">Dessert</button>
-        <button onclick="showTab('drink')">Drinks</button>
+            <br>
+            <br>
+            <!-- Navigation tabs -->
+            <button onclick="showTab('appetizer')">Appetizers</button>
+            <button onclick="showTab('main_course')">Main Course</button>
+            <button onclick="showTab('dessert')">Dessert</button>
+            <button onclick="showTab('drink')">Drinks</button>
+        </div>
 
         <!-- Tab content for each category -->
         <div id="appetizer" class="tab">

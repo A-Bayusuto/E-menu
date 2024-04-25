@@ -7,62 +7,82 @@
 </head>
 {% include 'dashboard.html' %}
 <body>
-    <h1>Cart</h1>
-    <!-- Button to clear the cart -->
-    <form method="POST" action="{% url 'clear_cart' %}">
-        {% csrf_token %}
-        <button type="submit">Clear Cart</button>
-    </form>
-    <table>
-        <thead>
+    <div class="content-container">
+        <h1>Cart</h1>
+        <!-- Button to clear the cart -->
+        <form method="POST" action="{% url 'clear_cart' %}">
+            {% csrf_token %}
+            <button type="submit">Clear Cart</button>
+        </form>
+        <table>
+            <thead>
+                <tr>
+                    <th>Order Name</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                    <th>Total Price</th>
+                </tr>
+            </thead>
+            
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.category }}</td>
+                    <td>{{ item.price }}</td>
+                    <td>{{ item.qty }}</td>
+                    <td>{{ item.total_price }}</td>
+                    <td>
+                        <div class="button-container">
+                            <form method="post" action="/cart/increase_item/">
+                                {% csrf_token %}
+                                <input type="hidden" name="item_code" value="{{ item.code }}">
+                                <input type="hidden" name="quantity" value="{{ item.qty }}">
+                                <button type="submit">+</button>
+                            </form>
+                            <form method="post" action="/cart/reduce_item/">
+                                {% csrf_token %}
+                                <input type="hidden" name="item_code" value="{{ item.code }}">
+                                <input type="hidden" name="quantity" value="{{ item.qty }}">
+                                <button type="submit">-</button>
+                            </form>
+                            <form method="post" action="/cart/remove_item/">
+                                {% csrf_token %}
+                                <input type="hidden" name="item_code" value="{{ item.code }}">
+                                <button type="submit">Remove</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
             <tr>
-                <th>Order Name</th>
-                <th>Category</th>
-                <th>Price</th>
-                <th>Quantity</th>
-                <th>Total Price</th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th>Grand Total:<br><br>{{ grand_total }}</th>
             </tr>
-        </thead>
-        
-        <tbody>
-            {% for item in items %}
-            <tr>
-                <td>{{ item.name }}</td>
-                <td>{{ item.category }}</td>
-                <td>{{ item.price }}</td>
-                <td>{{ item.qty }}</td>
-                <td>{{ item.total_price }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-        <tr>
-            <th></th>
-            <th></th>
-            <th></th>
-            <th></th>
-            <th>Grand Total:<br><br>{{ grand_total }}</th>
-        </tr>
-    </table>
-    <form id="checkoutForm" method="POST" action="{% url 'checkout' %}">
-        {% csrf_token %}
-        <label for="table_number">Table Number:</label>
-        <input type="text" id="table_number" name="table_number">
-        <button type="submit">Checkout</button>
-    </form>
+        </table>
+        <form id="checkoutForm" method="POST" action="{% url 'checkout' %}">
+            {% csrf_token %}
+            <label for="table_number">Table Number:</label>
+            <input type="text" id="table_number" name="table_number">
+            <button type="submit">Checkout</button>
+        </form>
+    </div>
 </body>
 </html>
 
-<script>
-    document.getElementById('checkoutForm').addEventListener('submit', function(event) {
-        var tableNumber = document.getElementById('table_number').value;
-        if (!tableNumber) {
-            event.preventDefault();
-            alert('Please provide a table number.');
-        }
-    });
-</script>
-
 <style>
+    .content-container {
+    text-align: center; /* Center align all content */
+    margin: 0 auto; /* Center the container horizontally */
+    width: 75%; /* Set the width of the container */
+    padding: 20px; /* Add some padding for better spacing */
+    }
+
     table {
         border-collapse: separate;
         border-spacing: 0 10px; /* Adjust the vertical spacing between rows */
@@ -74,4 +94,20 @@
         border: 1px solid #ddd;
         text-align: left;
     }
+
+    .button-container {
+        display: flex;
+        justify-content: space-between;
+        padding: 0 5px;
+    }
+
+    .button-container form {
+        display: inline;
+        margin: 0;
+    }
+
+    .button-container form button {
+        margin: 0;
+    }
+
 </style>

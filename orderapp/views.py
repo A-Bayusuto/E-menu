@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.template import loader
 from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.urls import reverse
@@ -169,6 +169,7 @@ def CartPage(request):
             'total_price': total_price,
             'qty' : qty,
             'grand_total': grand_total,
+            'code' : menu_item.code
         })
 
     # Pass the items list to the template context
@@ -177,8 +178,97 @@ def CartPage(request):
         'grand_total': grand_total,
     }
 
-
     return render(request, 'cart.html', context)
+
+def increase_item(request):
+    if request.method == 'POST':
+        menu_id = request.POST.get('item_code')
+        quantity = int(request.POST.get('quantity'))
+
+        try:
+            menu_item = Menu.objects.get(pk=menu_id)
+        except Menu.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'Menu item does not exist'})
+
+        # Retrieve cart items from the cookie or initialize an empty dictionary
+        cart_items_json = request.COOKIES.get('cart_items', '{}')
+        cart_items = json.loads(cart_items_json)
+
+        # Increase the quantity of the item in the cart
+        cart_items[menu_id] = cart_items.get(menu_id, 0) + 1
+
+        # Serialize the updated cart items dictionary to JSON
+        cart_items_json = json.dumps(cart_items)
+
+        # Set the updated cart items as a cookie in the response
+        response = HttpResponseRedirect(reverse('cart'))
+        response.set_cookie('cart_items', cart_items_json)
+
+        return response
+
+    else:
+        return JsonResponse({'success': False, 'message': 'Method not allowed'})
+
+def reduce_item(request):
+    if request.method == 'POST':
+        menu_id = request.POST.get('item_code')
+        quantity = int(request.POST.get('quantity'))
+
+        try:
+            menu_item = Menu.objects.get(pk=menu_id)
+        except Menu.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'Menu item does not exist'})
+
+        # Retrieve cart items from the cookie or initialize an empty dictionary
+        cart_items_json = request.COOKIES.get('cart_items', '{}')
+        cart_items = json.loads(cart_items_json)
+
+        # Reduce the quantity of the item in the cart
+        if menu_id in cart_items:
+            cart_items[menu_id] = max(0, cart_items[menu_id] - 1)  # Ensure quantity doesn't go below 0
+            if cart_items[menu_id] == 0:
+                del cart_items[menu_id]  # Remove the item if quantity becomes 0
+
+        # Serialize the updated cart items dictionary to JSON
+        cart_items_json = json.dumps(cart_items)
+
+        # Set the updated cart items as a cookie in the response
+        response = HttpResponseRedirect(reverse('cart'))
+        response.set_cookie('cart_items', cart_items_json)
+
+        return response
+
+    else:
+        return JsonResponse({'success': False, 'message': 'Method not allowed'})
+
+def remove_item(request):
+    if request.method == 'POST':
+        menu_id = request.POST.get('item_code')
+
+        try:
+            menu_item = Menu.objects.get(pk=menu_id)
+        except Menu.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'Menu item does not exist'})
+
+        # Retrieve cart items from the cookie or initialize an empty dictionary
+        cart_items_json = request.COOKIES.get('cart_items', '{}')
+        cart_items = json.loads(cart_items_json)
+
+        # Remove the item from the cart
+        if menu_id in cart_items:
+            del cart_items[menu_id]
+
+        # Serialize the updated cart items dictionary to JSON
+        cart_items_json = json.dumps(cart_items)
+
+        # Set the updated cart items as a cookie in the response
+        response = HttpResponseRedirect(reverse('cart'))
+        response.set_cookie('cart_items', cart_items_json)
+
+        return response
+
+    else:
+        return JsonResponse({'success': False, 'message': 'Method not allowed'})
 
 
 def clear_cart(request):
