@@ -1,26 +1,34 @@
-# E-menu
+### Setup Instructions:
 
-Fetch webstite from git
-Step 1:
-Clone git clone https://github.com/A-Bayusuto/E-menu.git
+1. **Fetch Website from Git:** Clone the repository:
 
-To rebuild from scratch database folders not pushed onto git
-Step 2:
-Delete data db folder
+    ```bash
+    git clone https://github.com/A-Bayusuto/E-menu.git
+    ```
 
-Build docker container
-Step 3:
-Run command: docker-compose up --build
+2. **Rebuild Database:** Delete the database folders not pushed onto git.
 
-Sets the database
-Step 4:
-docker-compose run web python manage.py makemigrations
-docker-compose run web python manage.py migrate
+3. **Build Docker Container:** Run the following command:
 
-Create admin
-Step 5:
-docker-compose run web python manage.py createsuperuser
+    ```bash
+    docker-compose up --build
+    ```
 
-start site
-Step 6:
-docker-compose up
+4. **Set Up the Database:** Execute the following commands to set up the database:
+
+    ```bash
+    docker-compose run web python manage.py makemigrations
+    docker-compose run web python manage.py migrate
+    ```
+
+5. **Create Admin:** Create an admin account:
+
+    ```bash
+    docker-compose run web python manage.py createsuperuser
+    ```
+
+6. **Start the Site:** Start the site:
+
+    ```bash
+    docker-compose up
+    ```
