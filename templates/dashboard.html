@@ -9,14 +9,33 @@
     <header>
         <h1>Dashboard</h1>
         <nav class="tabs">
-            <button onclick="location.href='/admin/'">Admin</button>
-            <button onclick="location.href='/menu/'">Menu</button>
-            <button onclick="location.href='/orderlist/'">Order List</button>
-            <button onclick="location.href='/analytics/sales/'">Sales Analytics</button>
-            <button onclick="location.href='/analytics/menu/'">Menu Analytics</button>
+            {% if user.is_authenticated %}
+                {% if user.is_superuser %}
+                    <!-- Admin buttons -->
+                    <button onclick="location.href='/admin/'">Admin</button>
+                    <button onclick="location.href='/menu/'">Menu</button>
+                    <button onclick="location.href='/orderlist/'">Order List</button>
+                    <button onclick="location.href='/analytics/sales/'">Sales Analytics</button>
+                    <button onclick="location.href='/analytics/menu/'">Menu Analytics</button>
+                    <button onclick="location.href='/accounts/logout/'">Logout</button>
+                {% elif user.is_staff %}
+                    <!-- Employee buttons -->
+                    <button onclick="location.href='/menu/'">Menu</button>
+                    <button onclick="location.href='/orderlist/'">Order List</button>
+                    <button onclick="location.href='/accounts/logout/'">Logout</button>
+                {% else %}
+                    <!-- Regular user buttons -->
+                    <button onclick="location.href='/menu/'">Menu</button>
+                    <button onclick="location.href='/orderlist/'">Order List</button>
+                    <button onclick="location.href='/accounts/logout/'">Logout</button>
+                {% endif %}
+            {% else %}
+                <!-- Guest buttons (not logged in) -->
+                <button onclick="location.href='/menu/'">Menu</button>
+                <button onclick="location.href='/cart/'">Cart</button>
+            {% endif %}
         </nav>
     </header>
 
-    <!-- Your page content here -->
 </body>
 </html>

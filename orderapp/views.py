@@ -1,9 +1,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.template import loader
+from django.contrib.auth.forms import UserCreationForm, UserChangeForm, PasswordChangeForm
+from django.contrib.auth.models import User
+from django.contrib.auth.decorators import user_passes_test
 from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from .models import Menu, OrderTable, OrderDate, Supplier
-from .forms import OrderStatusForm
+from .forms import OrderStatusForm, CustomUserChangeForm, CustomPasswordChangeForm
 from datetime import date, datetime, timedelta
 from django.utils.timezone import now
 from django.db.models import Sum
@@ -563,3 +566,89 @@ def menu_analytics(request):
 
     # Render the template with the provided context
     return render(request, 'analytics_menu.html', context)
+
+
+@user_passes_test(lambda u: u.is_superuser or u.is_staff)
+def create_user(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('user_list')
+    else:
+        form = UserCreationForm()
+    return render(request, 'create_user.html', {'form': form})
+
+@user_passes_test(lambda u: u.is_superuser or u.is_staff)
+def edit_user(request, user_id):
+    user = User.objects.get(id=user_id)
+    
+    # Set a cookie with the user ID
+    response = render(request, 'edit_user.html', {'form': CustomUserChangeForm(instance=user), 'user': user})
+    response.set_cookie('edit_user_id', user_id)
+    
+    if request.method == 'POST':
+        form = CustomUserChangeForm(request.POST, instance=user)
+        if form.is_valid():
+            form.save()
+            return redirect('user_list')
+    else:
+        form = CustomUserChangeForm(instance=user)
+    return response
+
+@user_passes_test(lambda u: u.is_superuser or u.is_staff)
+def user_list(request):
+    users = User.objects.all()
+    return render(request, 'user_list.html', {'users': users})
+
+# @user_passes_test(lambda u: u.is_superuser or u.is_staff)
+# def change_password(request):
+#     # Get user_id from the cookie
+#     user_id = request.COOKIES.get('edit_user_id')
+
+#     if user_id is None:
+#         # Handle case where cookie is missing
+#         return HttpResponse("User ID not found in cookie.")
+    
+#     try:
+#         user = User.objects.get(id=user_id)
+#     except User.DoesNotExist:
+#         # Handle case where user does not exist
+#         return HttpResponse("User not found.")
+
+#     form = PasswordChangeForm(user)
+
+#     if request.method == 'POST':
+#         form = PasswordChangeForm(user, request.POST)
+#         if form.is_valid():
+#             form.save()
+#             # Clear the cookie by setting its value to an empty string and expiration to a past date
+#             response = redirect('user_list')
+#             response.set_cookie('edit_user_id', '', expires='Thu, 01 Jan 1970 00:00:00 GMT')
+#             return response
+    
+#     return render(request, 'change_password.html', {'form': form})
+
+@user_passes_test(lambda u: u.is_superuser or u.is_staff)
+def change_password(request):
+    user_id = request.COOKIES.get('edit_user_id')
+
+    if user_id is None:
+        return HttpResponse("User ID not found in cookie.")
+
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        return HttpResponse("User not found.")
+
+    form = CustomPasswordChangeForm(user)
+
+    if request.method == 'POST':
+        form = CustomPasswordChangeForm(user, request.POST)
+        if form.is_valid():
+            form.save()
+            response = redirect('user_list')
+            response.set_cookie('edit_user_id', '', expires='Thu, 01 Jan 1970 00:00:00 GMT')
+            return response
+    
+    return render(request, 'change_password.html', {'form': form})

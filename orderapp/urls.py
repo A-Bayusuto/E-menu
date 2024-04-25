@@ -16,4 +16,8 @@ urlpatterns = [
     path('checkout/success/', views.checkout_success, name='checkout_success'),
     path('analytics/sales/', views.sales_analytics, name='sales_analytics'),
     path('analytics/menu/', views.menu_analytics, name='menu_analytics'),
+    path('user/create/', views.create_user, name='create_user'),
+    path('user/edit/<int:user_id>/', views.edit_user, name='edit_user'),
+    path('user/edit/password/', views.change_password, name='change_password'),
+    path('user/list/', views.user_list, name='user_list'),
 ]
