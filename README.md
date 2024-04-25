@@ -6,7 +6,7 @@
     git clone https://github.com/A-Bayusuto/E-menu.git
     ```
 
-2. **Rebuild Database:** Delete the database folders not pushed onto git.
+2. **Rebuild Database:** Delete the data folder not pushed onto git.
 
 3. **Build Docker Container:** Run the following command:
 
