@@ -23,9 +23,17 @@ def get_supplier(request):
     user_groups = user.groups.all()
     supplier = None
     for group in user_groups:
-        if group.name not in ["Owner", "Employee"]:
+        if group.name not in ["Store_Owner", "Employee"]:
             supplier = group
     return supplier
+
+def user_in_group(group_name):
+    """
+    Check if the user belongs to the specified group.
+    """
+    def check_user_group(user):
+        return user.groups.filter(name=group_name).exists()
+    return user_passes_test(check_user_group)
 
 def appetizer(request):
     # Fetch appetizers from the Menu model
@@ -406,7 +414,11 @@ def update_order_status(request):
         return JsonResponse({'error': 'Invalid request.'}, status=400)
     
 
-def get_kpi_per_weeks():
+def get_kpi_per_weeks(supplier_name):
+    try:
+        supplier = Supplier.objects.get(name=supplier_name)
+    except Supplier.DoesNotExist:
+        return []
     # Get KPIs for the last 52 weeks
     kpi_weeks = []
     current_date = now()
@@ -414,7 +426,8 @@ def get_kpi_per_weeks():
         start_date = current_date - timedelta(days=current_date.weekday() + (i - 1) * 7)
         end_date = start_date + timedelta(days=6)
         weekly_sales = OrderTable.objects.filter(
-            order_date__order_date__range=[start_date, end_date]
+            order_date__order_date__range=[start_date, end_date],
+            supplier=supplier
         ).aggregate(total_sales=Sum('total'))['total_sales'] or 0
         kpi_weeks.append({
             'week': i,
@@ -425,7 +438,11 @@ def get_kpi_per_weeks():
 
     return kpi_weeks
 
-def get_kpi_per_months():
+def get_kpi_per_months(supplier_name):
+    try:
+        supplier = Supplier.objects.get(name=supplier_name)
+    except Supplier.DoesNotExist:
+        return []
     # Get KPIs for the last 24 months
     kpi_months = []
     current_date = now()
@@ -437,7 +454,8 @@ def get_kpi_per_months():
         start_date = target_date.replace(day=1)
         end_date = target_date.replace(day=last_day)
         monthly_sales = OrderTable.objects.filter(
-            order_date__order_date__range=[start_date, end_date]
+            order_date__order_date__range=[start_date, end_date],
+            supplier=supplier
         ).aggregate(total_sales=Sum('total'))['total_sales'] or 0
         kpi_months.append({
             'month': month,
@@ -447,13 +465,18 @@ def get_kpi_per_months():
     return kpi_months
 
 
-def get_kpi_per_years():
+def get_kpi_per_years(supplier_name):
+    try:
+        supplier = Supplier.objects.get(name=supplier_name)
+    except Supplier.DoesNotExist:
+        return []
     # Get KPIs for all years
     kpi_years = []
     years = OrderDate.objects.values_list('order_year', flat=True).distinct()
     for year in years:
         yearly_sales = OrderTable.objects.filter(
-            order_date__order_date__year=year
+            order_date__order_date__year=year,
+            supplier=supplier
         ).aggregate(total_sales=Sum('total'))['total_sales'] or 0
         kpi_years.append({
             'year': year,
@@ -461,10 +484,12 @@ def get_kpi_per_years():
         })
     return kpi_years
 
+@user_in_group('Store_Owner')
 def sales_analytics(request):
-    weekly_kpi = get_kpi_per_weeks()
-    monthly_kpi = get_kpi_per_months()
-    yearly_kpi = get_kpi_per_years()
+    supplier_name = get_supplier(request)
+    weekly_kpi = get_kpi_per_weeks(supplier_name)
+    monthly_kpi = get_kpi_per_months(supplier_name)
+    yearly_kpi = get_kpi_per_years(supplier_name)
 
     # print('1 :', weekly_kpi)
     # print('2 :', monthly_kpi)
@@ -478,30 +503,45 @@ def sales_analytics(request):
     return render(request, 'analytics_sales.html', context)
 
 
-def get_menu_performance_per_week():
+def get_menu_performance_per_week(supplier_name):
+    try:
+        supplier = Supplier.objects.get(name=supplier_name)
+    except Supplier.DoesNotExist:
+        return []
     # Get performance of each menu item for the current week based on quantity ordered
     start_date = now() - timedelta(days=now().weekday())
     end_date = start_date + timedelta(days=6)
     menu_performance = OrderTable.objects.filter(
-        order_date__order_date__range=[start_date, end_date]
+        order_date__order_date__range=[start_date, end_date],
+        supplier=supplier
     ).values('menu__item').annotate(total_quantity=Sum('qty')).order_by('-total_quantity')
     return menu_performance
 
-def get_menu_performance_per_month():
+def get_menu_performance_per_month(supplier_name):
+    try:
+        supplier = Supplier.objects.get(name=supplier_name)
+    except Supplier.DoesNotExist:
+        return []
     # Get performance of each menu item for the current month based on quantity ordered
     current_date = now()
     start_date = current_date.replace(day=1)
     end_date = start_date.replace(day=1) + timedelta(days=32)
     menu_performance = OrderTable.objects.filter(
-        order_date__order_date__range=[start_date, end_date]
+        order_date__order_date__range=[start_date, end_date],
+        supplier=supplier
     ).values('menu__item').annotate(total_quantity=Sum('qty')).order_by('-total_quantity')
     return menu_performance
 
-def get_menu_performance_per_year():
+def get_menu_performance_per_year(supplier_name):
+    try:
+        supplier = Supplier.objects.get(name=supplier_name)
+    except Supplier.DoesNotExist:
+        return []
     # Get performance of each menu item for the current year based on quantity ordered
     current_year = now().year
     menu_performance = OrderTable.objects.filter(
-        order_date__order_date__year=current_year
+        order_date__order_date__year=current_year,
+        supplier=supplier
     ).values('menu__item').annotate(total_quantity=Sum('qty')).order_by('-total_quantity')
     return menu_performance
 
@@ -554,13 +594,14 @@ def get_menu_performance_per_year():
     #     menu_performance = cursor.fetchall()
     # return menu_performance
 
-
+@user_in_group('Store_Owner')
 def menu_analytics(request):
+    supplier_name = get_supplier(request)
 
     # Get menu performance data
-    menu_performance_per_week = get_menu_performance_per_week()
-    menu_performance_per_month = get_menu_performance_per_month()
-    menu_performance_per_year = get_menu_performance_per_year()
+    menu_performance_per_week = get_menu_performance_per_week(supplier_name)
+    menu_performance_per_month = get_menu_performance_per_month(supplier_name)
+    menu_performance_per_year = get_menu_performance_per_year(supplier_name)
 
     # print('1 :', menu_performance_per_week)
     # print('2 :', menu_performance_per_month)
