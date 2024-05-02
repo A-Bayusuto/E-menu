@@ -18,6 +18,15 @@ import os
 
 import json
 
+def get_supplier(request):
+    user = request.user
+    user_groups = user.groups.all()
+    supplier = None
+    for group in user_groups:
+        if group.name not in ["Owner", "Employee"]:
+            supplier = group
+    return supplier
+
 def appetizer(request):
     # Fetch appetizers from the Menu model
     appetizers = Menu.objects.filter(category='Appetizer')

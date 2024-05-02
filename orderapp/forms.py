@@ -19,7 +19,7 @@ class OrderStatusForm(forms.ModelForm):
 
 class CustomUserChangeForm(UserChangeForm):
     class Meta(UserChangeForm.Meta):
-        exclude = ('password', 'is_superuser', 'user_permissions', 'groups')
+        exclude = ('password', 'is_superuser', 'user_permissions')
 
 class CustomPasswordChangeForm(DjangoPasswordChangeForm):
     def __init__(self, *args, **kwargs):
