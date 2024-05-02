@@ -372,11 +372,11 @@ def checkout_success(request):
     return render(request, 'checkout_success.html', context)
 
 def orderlist(request):
-    start_date = date.today() - timedelta(days=7)
+    start_date = date.today() - timedelta(days=30)
     current_date = date.today()
     orders = OrderTable.objects.filter(
         order_date__order_date__range=[start_date, current_date],
-        order_status="Pending"
+        # order_status="Pending"
     )    
     form = OrderStatusForm()  # Create an instance of the form
     context = {
