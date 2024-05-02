@@ -66,7 +66,7 @@ def appetizer(request):
 def MenuPage(request):
     # Retrieve all suppliers
     suppliers = list(Supplier.objects.all()) 
-    suppliers.append({'supplier_id': '0', 'name': 'All'})
+    suppliers.insert(0, {'supplier_id': '0', 'name': 'All'})
     quantities = range(1, 21)
 
     # Retrieve selected supplier ID from the cookie

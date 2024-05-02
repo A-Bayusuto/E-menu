@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+        header {
+            background-color: #333;
+            color: #fff;
+            padding: 10px;
+            text-align: right;
+        }
+        .tabs {
+            display: inline-block;
+        }
+        .tabs button {
+            background-color: #555;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin-left: 10px;
+            cursor: pointer;
+        }
+        .tabs button:hover {
+            background-color: #777;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="tabs">
+            {% if user.is_authenticated %}
+                {% if user.is_superuser %}
+                    <!-- Admin buttons -->
+                    <button onclick="location.href='/user/list'">List</button>
+                    <button onclick="location.href='/user/create'">Create</button>
+                    <button onclick="location.href='/accounts/logout/'">Logout</button>
+                {% elif user.is_staff %}
+                    <!-- Employee buttons -->
+                    <button onclick="location.href='/user/list'">List</button>
+                    <button onclick="location.href='/user/create'">Create</button>
+                    <button onclick="location.href='/accounts/logout/'">Logout</button>
+                {% else %}
+                {% endif %}
+            {% else %}
+            {% endif %}
+        </nav>
+    </header>
+
+</body>
+</html>
