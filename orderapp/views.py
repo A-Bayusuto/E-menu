@@ -9,11 +9,13 @@ from .models import Menu, OrderTable, OrderDate, Supplier
 from .forms import OrderStatusForm, CustomUserChangeForm, CustomPasswordChangeForm
 from datetime import date, datetime, timedelta
 from django.utils.timezone import now
+from django.utils.dateparse import parse_date, parse_time
 from django.db.models import Sum
 from django.db import connection, transaction
 from django.http import JsonResponse
 from calendar import monthrange
 import os
+
 
 
 import json
@@ -368,15 +370,36 @@ def checkout(request):
         # Clear cart items after checkout
         response = redirect('checkout_success')  # Redirect to checkout_success view
         response.delete_cookie('cart_items')
+
+        response.set_cookie('table_id', table_number)
+        if 'order_date' not in request.COOKIES:
+            response.set_cookie('order_date', current_datetime.date())
+        if 'order_time' not in request.COOKIES:
+            response.set_cookie('order_time', current_datetime.time())
         return response
 
     # Handle GET requests or other cases where method is not POST
     return redirect('cart')
 
+
 def checkout_success(request):
-    start_date = date.today() - timedelta(days=7)
-    current_date = date.today()
-    orders = OrderTable.objects.filter(order_date__order_date__range=[start_date, current_date], order_status="Pending")    
+    table_id = int(request.COOKIES.get('table_id'))
+    order_date_str = request.COOKIES.get('order_date')
+    order_time_str = request.COOKIES.get('order_time')
+    order_date = parse_date(order_date_str)
+    order_time = parse_time(order_time_str)
+
+    # Ensure order_date and order_time are valid objects before filtering
+    if order_date is None or order_time is None:
+        return HttpResponse("Invalid date or time format")
+
+    # Filter orders based on table_id, order_date, and order_time
+    orders = OrderTable.objects.filter(
+        table_id=table_id,
+        order_date_real__gte=order_date,
+        order_time__gte=order_time
+    )
+
     context = {
         'orders': orders
     }

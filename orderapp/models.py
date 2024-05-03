@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 
 class Supplier(models.Model):
     supplier_id = models.AutoField(primary_key=True)
@@ -34,6 +35,8 @@ class OrderDate(models.Model):
     order_month = models.IntegerField()
     order_year = models.IntegerField()
     
+def current_time():
+    return timezone.now().time()
 
 class OrderTable(models.Model):
     CATEGORY_CHOICES = [
@@ -45,6 +48,8 @@ class OrderTable(models.Model):
     supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE)
     menu = models.ForeignKey(Menu, on_delete=models.CASCADE)
     order_date = models.ForeignKey(OrderDate, on_delete=models.CASCADE)
+    order_date_real = models.DateField(default=timezone.now)
+    order_time = models.TimeField(default=current_time)
     order_id = models.IntegerField()
     qty = models.IntegerField()
     total = models.DecimalField(max_digits=10, decimal_places=2)
@@ -52,3 +57,4 @@ class OrderTable(models.Model):
 
     class Meta:
         unique_together = ('table_id', 'supplier', 'menu', 'order_date', 'order_id')
+
