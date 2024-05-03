@@ -53,3 +53,17 @@
     </table>
 </body>
 </html>
+
+<script>
+    // Function to reload the page after a specified time interval
+    function reloadPage() {
+        setTimeout(function() {
+            location.reload();
+        }, 150000); // 2.5 minutes = 150000 milliseconds
+    }
+
+    // Call reloadPage function when the page loads
+    window.onload = function() {
+        reloadPage();
+    };
+</script>
