@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.template import loader
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm, PasswordChangeForm
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.contrib.auth.decorators import user_passes_test
 from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.urls import reverse
@@ -34,6 +34,17 @@ def user_in_group(group_name):
     def check_user_group(user):
         return user.groups.filter(name=group_name).exists()
     return user_passes_test(check_user_group)
+
+def user_in_group_or_staff(group_names):
+    """
+    Check if the user belongs to any of the specified groups or is a staff member.
+    """
+    def check_user(user):
+        if user.is_staff or user.is_superuser:
+            return True
+        groups = Group.objects.filter(name__in=group_names)
+        return groups.exists() and user.groups.filter(name__in=group_names).exists()
+    return user_passes_test(check_user)
 
 def appetizer(request):
     # Fetch appetizers from the Menu model
@@ -371,6 +382,7 @@ def checkout_success(request):
     }
     return render(request, 'checkout_success.html', context)
 
+@user_in_group_or_staff(['Store_Owner', 'Employee'])
 def orderlist(request):
     start_date = date.today() - timedelta(days=30)
     current_date = date.today()
@@ -385,7 +397,53 @@ def orderlist(request):
     }
     return render(request, 'orderlist.html', context)
 
+@user_in_group_or_staff(['Store_Owner', 'Employee'])
+def orderlist_pending(request):
+    start_date = date.today() - timedelta(days=30)
+    current_date = date.today()
+    orders = OrderTable.objects.filter(
+        order_date__order_date__range=[start_date, current_date],
+        order_status="Pending"
+    )    
+    form = OrderStatusForm()  # Create an instance of the form
+    context = {
+        'orders': orders,
+        'form': form,
+    }
+    return render(request, 'orderlist.html', context)
 
+@user_in_group_or_staff(['Store_Owner', 'Employee'])
+def orderlist_finished(request):
+    start_date = date.today() - timedelta(days=30)
+    current_date = date.today()
+    orders = OrderTable.objects.filter(
+        order_date__order_date__range=[start_date, current_date],
+        order_status="Finished"
+    )    
+    form = OrderStatusForm()  # Create an instance of the form
+    context = {
+        'orders': orders,
+        'form': form,
+    }
+    return render(request, 'orderlist.html', context)
+
+@user_in_group_or_staff(['Store_Owner', 'Employee'])
+def orderlist_cancelled(request):
+    start_date = date.today() - timedelta(days=30)
+    current_date = date.today()
+    orders = OrderTable.objects.filter(
+        order_date__order_date__range=[start_date, current_date],
+        order_status="Cancelled"
+    )    
+    form = OrderStatusForm()  # Create an instance of the form
+    context = {
+        'orders': orders,
+        'form': form,
+    }
+    return render(request, 'orderlist.html', context)
+
+
+@user_in_group_or_staff(['Store_Owner', 'Employee'])
 def update_order_status(request):
     if request.method == 'POST' and request.is_ajax():
         table_id = request.POST.get('table_id')

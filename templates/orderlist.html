@@ -8,7 +8,15 @@
     <style>
         table {
             border-collapse: collapse;
-            width: 100%;
+            width: 75%; /* Set the width to 75% of the screen */
+            margin: auto; /* Center the table horizontally */
+            margin-left: 10%; /* Set a consistent margin from the left */
+        }
+        nav {
+            border-collapse: collapse;
+            width: 75%; /* Set the width to 75% of the screen */
+            margin: auto; /* Center the table horizontally */
+            margin-left: 10%; /* Set a consistent margin from the left */
         }
         th, td {
             border: 1px solid #ddd;
@@ -23,10 +31,14 @@
 </head>
 {% include 'dashboard.html' %}
 <body>
-    <h1>Order Table</h1>
-    <button onclick="getPending()">Pending</button>
-    <button onclick="getFinished()">Finished</button>
-    <button onclick="getCancelled()">Cancelled</button>
+    <nav>
+        <h1>Order Table</h1>
+        <button onclick="location.href='/orderlist/'">All</button>
+        <button onclick="location.href='/orderlist/Pending'">Pending</button>
+        <button onclick="location.href='/orderlist/Finished'">Finished</button>
+        <button onclick="location.href='/orderlist/Cancelled'">Cancelled</button>
+    </nav>
+
 
     <h1></h1>
     
