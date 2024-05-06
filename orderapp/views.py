@@ -407,10 +407,12 @@ def checkout_success(request):
 
 @user_in_group_or_staff(['Store_Owner', 'Employee'])
 def orderlist(request):
+    supplier = get_supplier(request)
     start_date = date.today() - timedelta(days=30)
     current_date = date.today()
     orders = OrderTable.objects.filter(
         order_date__order_date__range=[start_date, current_date],
+        supplier__name = supplier
         # order_status="Pending"
     )    
     form = OrderStatusForm()  # Create an instance of the form
@@ -422,11 +424,14 @@ def orderlist(request):
 
 @user_in_group_or_staff(['Store_Owner', 'Employee'])
 def orderlist_pending(request):
+    supplier = get_supplier(request)
     start_date = date.today() - timedelta(days=30)
     current_date = date.today()
     orders = OrderTable.objects.filter(
         order_date__order_date__range=[start_date, current_date],
-        order_status="Pending"
+        order_status="Pending",
+        supplier__name = supplier
+
     )    
     form = OrderStatusForm()  # Create an instance of the form
     context = {
@@ -437,11 +442,13 @@ def orderlist_pending(request):
 
 @user_in_group_or_staff(['Store_Owner', 'Employee'])
 def orderlist_finished(request):
+    supplier = get_supplier(request)
     start_date = date.today() - timedelta(days=30)
     current_date = date.today()
     orders = OrderTable.objects.filter(
         order_date__order_date__range=[start_date, current_date],
-        order_status="Finished"
+        order_status="Finished",
+        supplier__name = supplier
     )    
     form = OrderStatusForm()  # Create an instance of the form
     context = {
@@ -452,11 +459,13 @@ def orderlist_finished(request):
 
 @user_in_group_or_staff(['Store_Owner', 'Employee'])
 def orderlist_cancelled(request):
+    supplier = get_supplier(request)
     start_date = date.today() - timedelta(days=30)
     current_date = date.today()
     orders = OrderTable.objects.filter(
         order_date__order_date__range=[start_date, current_date],
-        order_status="Cancelled"
+        order_status="Cancelled",
+        supplier__name = supplier
     )    
     form = OrderStatusForm()  # Create an instance of the form
     context = {
