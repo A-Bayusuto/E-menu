@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import user_passes_test
 from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from .models import Menu, OrderTable, OrderDate, Supplier
-from .forms import OrderStatusForm, CustomUserChangeForm, CustomPasswordChangeForm
+from .forms import OrderStatusForm, CustomUserChangeForm, CustomPasswordChangeForm, CustomUserChangeFormSuperUser
 from datetime import date, datetime, timedelta
 from django.utils.timezone import now
 from django.utils.dateparse import parse_date, parse_time
@@ -722,19 +722,35 @@ def create_user(request):
 @user_passes_test(lambda u: u.is_superuser or u.is_staff)
 def edit_user(request, user_id):
     user = User.objects.get(id=user_id)
+    user_groups = request.user.groups.all()
     
-    # Set a cookie with the user ID
-    response = render(request, 'edit_user.html', {'form': CustomUserChangeForm(instance=user), 'user': user})
-    response.set_cookie('edit_user_id', user_id)
-    
-    if request.method == 'POST':
-        form = CustomUserChangeForm(request.POST, instance=user)
-        if form.is_valid():
-            form.save()
-            return redirect('user_list')
-    else:
-        form = CustomUserChangeForm(instance=user)
-    return response
+    if request.user.is_superuser:
+        # print("entered superuser")
+        # Set a cookie with the user ID
+        response = render(request, 'edit_user.html', {'form': CustomUserChangeFormSuperUser(instance=user), 'user': user})
+        request.session['edit_user_id'] = user_id
+        if request.method == 'POST':
+            form = CustomUserChangeFormSuperUser(request.POST, instance=user)
+            if form.is_valid():
+                form.save()
+                return redirect('user_list')
+        else:
+            form = CustomUserChangeFormSuperUser(instance=user)
+
+    elif request.user.is_staff:
+        # print("entered staff")
+        # Set a cookie with the user ID
+        response = render(request, 'edit_user.html', {'form': CustomUserChangeForm(instance=user, user_groups=user_groups), 'user': user})
+        request.session['edit_user_id'] = user_id
+        if request.method == 'POST':
+            form = CustomUserChangeForm(request.POST, instance=user, user_groups=user_groups)
+            if form.is_valid():
+                form.save()
+                return redirect('user_list')
+        else:
+            form = CustomUserChangeForm(instance=user, user_groups=user_groups)
+    return response        
+
 
 @user_passes_test(lambda u: u.is_superuser or u.is_staff)
 def user_list(request):
@@ -771,7 +787,7 @@ def user_list(request):
 
 @user_passes_test(lambda u: u.is_superuser or u.is_staff)
 def change_password(request):
-    user_id = request.COOKIES.get('edit_user_id')
+    user_id = request.session.get('edit_user_id')
 
     if user_id is None:
         return HttpResponse("User ID not found in cookie.")
@@ -788,7 +804,7 @@ def change_password(request):
         if form.is_valid():
             form.save()
             response = redirect('user_list')
-            response.set_cookie('edit_user_id', '', expires='Thu, 01 Jan 1970 00:00:00 GMT')
+            request.session['edit_user_id'] = None
             return response
     
     return render(request, 'change_password.html', {'form': form})

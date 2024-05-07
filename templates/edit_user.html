@@ -1,18 +1,150 @@
 <!-- edit_user.html -->
 <!DOCTYPE html>
 <html lang="en">
+{% load static %}
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit User</title>
-    {% include 'dashboard_user.html' %}
+    <title>Edit User: {{ user.username }}</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'admin/css/base.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'admin/css/forms.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'admin/css/widgets.css' %}">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        #container {
+            width: 75%;
+            margin: 20% auto 0;
+        }
+
+        .group-checkbox {
+            display: inline-block;
+            margin-right: 10px;
+        }
+    </style>
 </head>
+
+
+
 <body>
-    <h1>Edit User: {{ user.username }}</h1>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Save</button>
-    </form>
+    <div id="container">
+        <h1>Edit User: {{ user.username }}</h1>
+        <div id="content-main">
+            <form method="post" enctype="multipart/form-data" novalidate>
+                {% csrf_token %}
+                <fieldset class="module aligned">
+                    <div class="form-row field-username">
+                        <div>
+                            <label for="id_username">Username:</label>
+                            {{ form.username }}
+                            {% if form.username.errors %}
+                            <ul class="errorlist">
+                                {% for error in form.username.errors %}
+                                <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="form-row field-groups">
+                        <div>
+                            <label for="id_groups">Groups:</label><br>
+                            {% for group in form.groups.field.queryset %}
+                                <div class="group-checkbox">
+                                    <label><input type="checkbox" name="groups" value="{{ group.id }}" {% if group in form.instance.groups.all %}checked{% endif %}> {{ group.name }}</label>
+                                </div>
+                            {% endfor %}
+                            {% if form.groups.errors %}
+                            <ul class="errorlist">
+                                {% for error in form.groups.errors %}
+                                <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="form-row field-first_name">
+                        <div>
+                            <label for="id_first_name">First name:</label>
+                            {{ form.first_name }}
+                            {% if form.first_name.errors %}
+                            <ul class="errorlist">
+                                {% for error in form.first_name.errors %}
+                                <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="form-row field-last_name">
+                        <div>
+                            <label for="id_last_name">Last name:</label>
+                            {{ form.last_name }}
+                            {% if form.last_name.errors %}
+                            <ul class="errorlist">
+                                {% for error in form.last_name.errors %}
+                                <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="form-row field-email">
+                        <div>
+                            <label for="id_email">Email address:</label>
+                            {{ form.email }}
+                            {% if form.email.errors %}
+                            <ul class="errorlist">
+                                {% for error in form.email.errors %}
+                                <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="form-row field-is_staff">
+                        <div>
+                            <label for="id_is_staff">Staff status:</label>
+                            {{ form.is_staff }}
+                            {% if form.is_staff.errors %}
+                            <ul class="errorlist">
+                                {% for error in form.is_staff.errors %}
+                                <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="form-row field-is_active">
+                        <div>
+                            <label for="id_is_active">Active:</label>
+                            {{ form.is_active }}
+                            {% if form.is_active.errors %}
+                            <ul class="errorlist">
+                                {% for error in form.is_active.errors %}
+                                <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                            {% endif %}
+                        </div>
+                    </div>
+                </fieldset>
+                <fieldset class="module aligned">
+                    <div class="form-row">
+                        <button type="button" onclick="window.location.href='../password/'">Change Password</button>
+                    </div>
+                </fieldset>                
+                <div class="submit-row">
+                    <button type="submit" class="default">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </body>
 </html>
