@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Dummy Data</title>
+</head>
+<body>
+    <h1>Create Dummy Data</h1>
+    <form method="post" action="/create_dummy_data/">
+        {% csrf_token %}
+        <label for="numRecords">Number of Records:</label>
+        <input type="number" id="numRecords" name="numRecords" value="100">
+        <button type="submit">Create</button>
+    </form>
+</body>
+</html>

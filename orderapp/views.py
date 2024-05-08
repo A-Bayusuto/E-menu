@@ -408,7 +408,7 @@ def checkout_success(request):
 @user_in_group_or_staff(['Store_Owner', 'Employee'])
 def orderlist(request):
     supplier = get_supplier(request)
-    start_date = date.today() - timedelta(days=30)
+    start_date = date.today() - timedelta(days=365)
     current_date = date.today()
     orders = OrderTable.objects.filter(
         order_date__order_date__range=[start_date, current_date],
@@ -425,7 +425,7 @@ def orderlist(request):
 @user_in_group_or_staff(['Store_Owner', 'Employee'])
 def orderlist_pending(request):
     supplier = get_supplier(request)
-    start_date = date.today() - timedelta(days=30)
+    start_date = date.today() - timedelta(days=365)
     current_date = date.today()
     orders = OrderTable.objects.filter(
         order_date__order_date__range=[start_date, current_date],
@@ -443,7 +443,7 @@ def orderlist_pending(request):
 @user_in_group_or_staff(['Store_Owner', 'Employee'])
 def orderlist_finished(request):
     supplier = get_supplier(request)
-    start_date = date.today() - timedelta(days=30)
+    start_date = date.today() - timedelta(days=365)
     current_date = date.today()
     orders = OrderTable.objects.filter(
         order_date__order_date__range=[start_date, current_date],
@@ -460,7 +460,7 @@ def orderlist_finished(request):
 @user_in_group_or_staff(['Store_Owner', 'Employee'])
 def orderlist_cancelled(request):
     supplier = get_supplier(request)
-    start_date = date.today() - timedelta(days=30)
+    start_date = date.today() - timedelta(days=365)
     current_date = date.today()
     orders = OrderTable.objects.filter(
         order_date__order_date__range=[start_date, current_date],
@@ -814,3 +814,62 @@ def change_password(request):
             return response
     
     return render(request, 'change_password.html', {'form': form})
+
+
+#==================================================================================
+#==================================================================================
+#==================================================================================
+
+import random
+from django.utils import timezone
+
+# Define function to create random order date
+def create_order_date():
+    order_time = timezone.now().time()
+    order_date = timezone.now().date() - timedelta(days=random.randint(0, 365))
+    order_week = order_date.isocalendar()[1]  # ISO week number
+    order_month = order_date.month
+    order_year = order_date.year
+    return OrderDate.objects.create(
+        order_time=order_time,
+        order_date=order_date,
+        order_week=order_week,
+        order_month=order_month,
+        order_year=order_year
+    )
+
+# Define function to create dummy data for OrderTable
+def create_order_table(num_records):
+    suppliers = Supplier.objects.all()
+    menus = Menu.objects.all()
+
+    for _ in range(num_records):
+        supplier = random.choice(suppliers)
+        menu = random.choice(menus)
+        order_date = create_order_date()
+
+        OrderTable.objects.create(
+            table_id=random.randint(1, 20),
+            supplier=supplier,
+            menu=menu,
+            order_date=order_date,
+            order_date_real=order_date.order_date,
+            order_time=order_date.order_time,
+            order_id=random.randint(1, 100),
+            qty=random.randint(1, 20),
+            total=round(random.uniform(1, 200), 2),
+            order_status=random.choice(['Pending', 'Finished', 'Cancelled'])
+        )
+
+@user_passes_test(lambda u: u.is_superuser)
+def dummy_data(request):
+    return render(request, 'dummy_data.html')
+
+@transaction.atomic
+def create_dummy_data(request):
+    if request.method == 'POST':
+        num_records = int(request.POST.get('numRecords', 100))
+        create_order_table(num_records)
+        return HttpResponse('Dummy data created successfully!')
+    else:
+        return render(request, 'create_dummy_data.html')

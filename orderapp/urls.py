@@ -23,4 +23,6 @@ urlpatterns = [
     path('user/edit/<int:user_id>/', views.edit_user, name='edit_user'),
     path('user/edit/password/', views.change_password, name='change_password'),
     path('user/list/', views.user_list, name='user_list'),
+    path('dummy_data/', views.dummy_data, name='dummy_data'),
+    path('create_dummy_data/', views.create_dummy_data, name='create_dummy_data'),
 ]
