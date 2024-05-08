@@ -517,7 +517,8 @@ def get_kpi_per_weeks(supplier_name):
         end_date = start_date + timedelta(days=6)
         weekly_sales = OrderTable.objects.filter(
             order_date__order_date__range=[start_date, end_date],
-            supplier=supplier
+            supplier=supplier,
+            order_status = "Finished"
         ).aggregate(total_sales=Sum('total'))['total_sales'] or 0
         kpi_weeks.append({
             'week': i,
@@ -545,7 +546,8 @@ def get_kpi_per_months(supplier_name):
         end_date = target_date.replace(day=last_day)
         monthly_sales = OrderTable.objects.filter(
             order_date__order_date__range=[start_date, end_date],
-            supplier=supplier
+            supplier=supplier,
+            order_status = "Finished"
         ).aggregate(total_sales=Sum('total'))['total_sales'] or 0
         kpi_months.append({
             'month': month,
@@ -566,7 +568,8 @@ def get_kpi_per_years(supplier_name):
     for year in years:
         yearly_sales = OrderTable.objects.filter(
             order_date__order_date__year=year,
-            supplier=supplier
+            supplier=supplier,
+            order_status = "Finished"
         ).aggregate(total_sales=Sum('total'))['total_sales'] or 0
         kpi_years.append({
             'year': year,
@@ -603,7 +606,8 @@ def get_menu_performance_per_week(supplier_name):
     end_date = start_date + timedelta(days=6)
     menu_performance = OrderTable.objects.filter(
         order_date__order_date__range=[start_date, end_date],
-        supplier=supplier
+        supplier=supplier,
+        order_status = "Finished"
     ).values('menu__item').annotate(total_quantity=Sum('qty')).order_by('-total_quantity')
     return menu_performance
 
@@ -618,7 +622,8 @@ def get_menu_performance_per_month(supplier_name):
     end_date = start_date.replace(day=1) + timedelta(days=32)
     menu_performance = OrderTable.objects.filter(
         order_date__order_date__range=[start_date, end_date],
-        supplier=supplier
+        supplier=supplier,
+        order_status = "Finished"
     ).values('menu__item').annotate(total_quantity=Sum('qty')).order_by('-total_quantity')
     return menu_performance
 
@@ -631,7 +636,8 @@ def get_menu_performance_per_year(supplier_name):
     current_year = now().year
     menu_performance = OrderTable.objects.filter(
         order_date__order_date__year=current_year,
-        supplier=supplier
+        supplier=supplier,
+        order_status = "Finished"
     ).values('menu__item').annotate(total_quantity=Sum('qty')).order_by('-total_quantity')
     return menu_performance
 

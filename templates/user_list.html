@@ -5,19 +5,50 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User List</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            text-align: center; /* Center align the content */
+        }
+        table {
+            margin: 0 auto; /* Center the table horizontally */
+            border-collapse: collapse; /* Remove default spacing between table cells */
+        }
+        th, td {
+            padding: 8px;
+            border-bottom: 1px solid #ddd; /* Add bottom border to separate rows */
+        }
+        th {
+            background-color: #f2f2f2; /* Light gray background for header row */
+        }
+        button {
+            cursor: pointer;
+        }
+    </style>
     {% include 'dashboard_user.html' %}
 </head>
 <body>
     <h1>User List</h1>
-    <ul>
-        {% for user in users %}
-            <li>
-                {{ user.username }}
-                <a href="{% url 'edit_user' user.id %}">
-                    <button>Edit</button>
-                </a>
-            </li>
-        {% endfor %}
-    </ul>
+    <table>
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+                <tr>
+                    <td>{{ user.username }}</td>
+                    <td>
+                        <a href="{% url 'edit_user' user.id %}">
+                            <button>Edit</button>
+                        </a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </body>
 </html>
