@@ -18,6 +18,7 @@ urlpatterns = [
     path('update_order_status/', views.update_order_status, name='update_order_status'),
     path('checkout/success/', views.checkout_success, name='checkout_success'),
     path('analytics/sales/', views.sales_analytics, name='sales_analytics'),
+    path('analytics/sales_overview/', views.sales_analytics_overview, name='sales_analytics_overview'),
     path('analytics/menu/', views.menu_analytics, name='menu_analytics'),
     path('user/create/', views.create_user, name='create_user'),
     path('user/edit/<int:user_id>/', views.edit_user, name='edit_user'),

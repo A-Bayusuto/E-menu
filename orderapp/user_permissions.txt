@@ -1,0 +1,9 @@
+Manager:
+- Cannot see orders of any store
+- Has access to specific analytics page that shows overall at /analytics/sales_overview/
+
+Store_Owner:
+- Can create User and give access to own group only
+
+Employee:
+- Can see orderlist and update

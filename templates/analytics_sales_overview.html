@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics</title>
+    <!-- Include Chart.js library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Apply styles to contain content within 75% of the screen */
+        .container {
+            max-width: 75%;
+            margin: 0 auto; /* Center the container */
+        }
+    </style>
+    {% include 'dashboard_user.html' %}
+</head>
+{% include 'dashboard.html' %}
+<body>
+    {% if user.is_authenticated %}
+        {% if user.is_superuser or user.is_staff %}
+            <div class="container">
+                <h1>Analytics</h1>
+
+                <h2>Monthly KPIs</h2>
+                <canvas id="monthlyChart" width="400" height="200"></canvas>
+
+                <h2>Weekly KPIs</h2>
+                <canvas id="weeklyChart" width="400" height="200"></canvas>
+
+                <h2>Yearly KPIs</h2>
+                <canvas id="yearlyChart" width="400" height="200"></canvas>
+
+                <script>
+                    // Monthly KPI Chart
+                    var monthlyLabels = [];
+                    var monthlyData = [];
+                    {% for kpi in monthly_kpi %}
+                        monthlyLabels.push('{{ kpi.month }}-{{ kpi.year }}');
+                        monthlyData.push({{ kpi.total_sales }});
+                    {% endfor %}
+
+                    var monthlyChart = new Chart(document.getElementById('monthlyChart'), {
+                        type: 'line',
+                        data: {
+                            labels: monthlyLabels,
+                            datasets: [{
+                                label: 'Total Sales',
+                                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                                borderColor: 'rgba(54, 162, 235, 1)',
+                                borderWidth: 1,
+                                data: monthlyData
+                            }]
+                        },
+                        options: {
+                            scales: {
+                                yAxes: [{
+                                    ticks: {
+                                        beginAtZero: true
+                                    }
+                                }]
+                            }
+                        }
+                    });
+
+                    // Weekly KPI Chart
+                    var weeklyLabels = [];
+                    var weeklyData = [];
+                    {% for kpi in weekly_kpi %}
+                        weeklyLabels.push('Week {{ kpi.week }}');
+                        weeklyData.push({{ kpi.total_sales }});
+                    {% endfor %}
+
+                    var weeklyChart = new Chart(document.getElementById('weeklyChart'), {
+                        type: 'bar',
+                        data: {
+                            labels: weeklyLabels,
+                            datasets: [{
+                                label: 'Total Sales',
+                                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                                borderColor: 'rgba(255, 99, 132, 1)',
+                                borderWidth: 1,
+                                data: weeklyData
+                            }]
+                        },
+                        options: {
+                            scales: {
+                                yAxes: [{
+                                    ticks: {
+                                        beginAtZero: true
+                                    }
+                                }]
+                            }
+                        }
+                    });
+
+                    // Yearly KPI Chart
+                    var yearlyLabels = [];
+                    var yearlyData = [];
+                    {% for kpi in yearly_kpi %}
+                        yearlyLabels.push('{{ kpi.year }}');
+                        yearlyData.push({{ kpi.total_sales }});
+                    {% endfor %}
+
+                    var yearlyChart = new Chart(document.getElementById('yearlyChart'), {
+                        type: 'bar',
+                        data: {
+                            labels: yearlyLabels,
+                            datasets: [{
+                                label: 'Total Sales',
+                                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                                borderColor: 'rgba(75, 192, 192, 1)',
+                                borderWidth: 1,
+                                data: yearlyData
+                            }]
+                        },
+                        options: {
+                            scales: {
+                                yAxes: [{
+                                    ticks: {
+                                        beginAtZero: true
+                                    }
+                                }]
+                            }
+                        }
+                    });
+                </script>
+            </div>
+        {% else %}
+            <p>You are not authorized to view this page. Please log in as an admin or store owner.</p>
+        {% endif %}
+    {% else %}
+        <p>You are not authorized to view this page. Please log in as an admin or staff member.</p>
+    {% endif %}
+</body>
+</html>

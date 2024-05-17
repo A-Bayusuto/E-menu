@@ -34,6 +34,7 @@ def user_in_group(group_name):
     Check if the user belongs to the specified group.
     """
     def check_user_group(user):
+        print(user.groups.filter(name=group_name).exists())
         return user.groups.filter(name=group_name).exists()
     return user_passes_test(check_user_group)
 
@@ -595,6 +596,74 @@ def sales_analytics(request):
     }
     return render(request, 'analytics_sales.html', context)
 
+
+def get_kpi_per_weeks_admin():
+    kpi_weeks = []
+    current_date = now()
+    for i in range(52, 0, -1):
+        start_date = current_date - timedelta(days=current_date.weekday() + (i - 1) * 7)
+        end_date = start_date + timedelta(days=6)
+        weekly_sales = OrderTable.objects.filter(
+            order_date__order_date__range=[start_date, end_date],
+            order_status = "Finished"
+        ).aggregate(total_sales=Sum('total'))['total_sales'] or 0
+        kpi_weeks.append({
+            'week': i,
+            'start_date': start_date,
+            'end_date': end_date,
+            'total_sales': weekly_sales
+        })
+
+    return kpi_weeks
+
+def get_kpi_per_months_admin():
+    kpi_months = []
+    current_date = now()
+    for i in range(23, -1, -1):
+        target_date = current_date - timedelta(days=i*30)
+        year = target_date.year
+        month = target_date.month
+        _, last_day = monthrange(year, month)
+        start_date = target_date.replace(day=1)
+        end_date = target_date.replace(day=last_day)
+        monthly_sales = OrderTable.objects.filter(
+            order_date__order_date__range=[start_date, end_date],
+            order_status = "Finished"
+        ).aggregate(total_sales=Sum('total'))['total_sales'] or 0
+        kpi_months.append({
+            'month': month,
+            'year': year,
+            'total_sales': monthly_sales
+        })
+    return kpi_months
+
+
+def get_kpi_per_years_admin():
+    kpi_years = []
+    years = OrderDate.objects.values_list('order_year', flat=True).distinct()
+    for year in years:
+        yearly_sales = OrderTable.objects.filter(
+            order_date__order_date__year=year,
+            order_status = "Finished"
+        ).aggregate(total_sales=Sum('total'))['total_sales'] or 0
+        kpi_years.append({
+            'year': year,
+            'total_sales': yearly_sales
+        })
+    return kpi_years
+
+@user_in_group('Manager')
+def sales_analytics_overview(request):
+    weekly_kpi = get_kpi_per_weeks_admin()
+    monthly_kpi = get_kpi_per_months_admin()
+    yearly_kpi = get_kpi_per_years_admin()
+
+    context = {
+        'monthly_kpi': monthly_kpi,
+        'weekly_kpi': weekly_kpi,
+        'yearly_kpi': yearly_kpi,
+    }
+    return render(request, 'analytics_sales_overview.html', context)
 
 def get_menu_performance_per_week(supplier_name):
     try:
