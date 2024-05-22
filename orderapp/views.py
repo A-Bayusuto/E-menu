@@ -206,13 +206,20 @@ def CartPage(request):
             'grand_total': grand_total,
             'code' : menu_item.code
         })
-
+    grand_total = format(grand_total, '.2f')
     # Pass the items list to the template context
-    context = {
-        'items': items,
-        'grand_total': grand_total,
-        'table_no' : int(table_no),
-    }
+    print("table num" + table_no)
+    if table_no != '{}':
+        context = {
+            'items': items,
+            'grand_total': grand_total,
+            'table_no' : int(table_no),
+        }
+    else:
+        context = {
+            'items': items,
+            'grand_total': grand_total,
+        }
 
     return render(request, 'cart.html', context)
 
@@ -399,13 +406,18 @@ def checkout_success(request):
 
         # Filter orders based on table_id, order_date, and order_time
         orders = OrderTable.objects.filter(
-            table_id=int(table_id),
+            table_id=table_id,
             order_date_real__gte=order_date,
             order_time__gte=order_time
-        )
-
+        ).exclude(order_status="Cancelled")
+        
+        grand_total = 0.00
+        for x in orders:
+            grand_total += float(x.total)
+        grand_total = format(grand_total, '.2f')    # set to 0f for rupiah
         context = {
-            'orders': orders
+            'orders': orders,
+            'grand_total' : grand_total
         }
     else:
         orders = OrderTable.objects.filter(

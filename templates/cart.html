@@ -9,9 +9,18 @@
 <script>
     function validateForm(event) {
         const tableNumberInput = document.getElementById('table_number');
+        const itemsTableBody = document.getElementById('cart-items-body');
+        
         if (tableNumberInput.value.trim() === '') {
             alert('Please enter a table number.');
-            event.preventDefault();
+            event.preventDefault(); // Prevent form submission
+            return;
+        }
+
+        if (itemsTableBody.children.length === 0) {
+            alert('Your cart is empty. Please add items to the cart before checking out.');
+            event.preventDefault(); // Prevent form submission
+            return;
         }
     }
 </script>
@@ -36,7 +45,7 @@
                 </tr>
             </thead>
             
-            <tbody>
+            <tbody id="cart-items-body">
                 {% for item in items %}
                 <tr>
                     <td>{{ item.name }}</td>
