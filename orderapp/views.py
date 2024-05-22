@@ -386,26 +386,34 @@ def checkout(request):
 
 
 def checkout_success(request):
-    table_id = int(request.COOKIES.get('table_id'))
-    order_date_str = request.COOKIES.get('order_date')
-    order_time_str = request.COOKIES.get('order_time')
-    order_date = parse_date(order_date_str)
-    order_time = parse_time(order_time_str)
+    table_id = request.COOKIES.get('table_id')
+    if table_id != None:
+        order_date_str = request.COOKIES.get('order_date')
+        order_time_str = request.COOKIES.get('order_time')
+        order_date = parse_date(order_date_str)
+        order_time = parse_time(order_time_str)
 
-    # Ensure order_date and order_time are valid objects before filtering
-    if order_date is None or order_time is None:
-        return HttpResponse("Invalid date or time format")
+        # Ensure order_date and order_time are valid objects before filtering
+        if order_date is None or order_time is None:
+            return HttpResponse("Invalid date or time format")
 
-    # Filter orders based on table_id, order_date, and order_time
-    orders = OrderTable.objects.filter(
-        table_id=table_id,
-        order_date_real__gte=order_date,
-        order_time__gte=order_time
-    )
+        # Filter orders based on table_id, order_date, and order_time
+        orders = OrderTable.objects.filter(
+            table_id=int(table_id),
+            order_date_real__gte=order_date,
+            order_time__gte=order_time
+        )
 
-    context = {
-        'orders': orders
-    }
+        context = {
+            'orders': orders
+        }
+    else:
+        orders = OrderTable.objects.filter(
+                    table_id= -1
+        )
+        context = {
+            'orders': orders
+        }
     return render(request, 'checkout_success.html', context)
 
 @user_in_group_or_staff(['Store_Owner', 'Employee'])
