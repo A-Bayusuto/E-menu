@@ -49,6 +49,15 @@ def user_in_group_or_staff(group_names):
         return groups.exists() and user.groups.filter(name__in=group_names).exists()
     return user_passes_test(check_user)
 
+def user_in_groups(group_names):
+    """
+    Check if the user belongs to any of the specified groups or is a staff member.
+    """
+    def check_user(user):
+        groups = Group.objects.filter(name__in=group_names)
+        return groups.exists() and user.groups.filter(name__in=group_names).exists()
+    return user_passes_test(check_user)
+
 def appetizer(request):
     # Fetch appetizers from the Menu model
     appetizers = Menu.objects.filter(category='Appetizer')
@@ -804,7 +813,7 @@ def menu_analytics(request):
     return render(request, 'analytics_menu.html', context)
 
 
-@user_passes_test(lambda u: u.is_superuser or u.is_staff)
+@user_in_groups(['Store_Owner', 'Manager'])
 def create_user(request):
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
