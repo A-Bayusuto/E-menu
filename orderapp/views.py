@@ -454,8 +454,7 @@ def orderlist_pending(request):
         order_date__order_date__range=[start_date, current_date],
         order_status="Pending",
         supplier__name = supplier
-
-    )    
+    ).order_by('-order_date__order_date')
     form = OrderStatusForm()  # Create an instance of the form
     context = {
         'orders': orders,
@@ -472,7 +471,7 @@ def orderlist_finished(request):
         order_date__order_date__range=[start_date, current_date],
         order_status="Finished",
         supplier__name = supplier
-    )    
+    ).order_by('-order_date__order_date')
     form = OrderStatusForm()  # Create an instance of the form
     context = {
         'orders': orders,
@@ -489,7 +488,7 @@ def orderlist_cancelled(request):
         order_date__order_date__range=[start_date, current_date],
         order_status="Cancelled",
         supplier__name = supplier
-    )    
+    ).order_by('-order_date__order_date')
     form = OrderStatusForm()  # Create an instance of the form
     context = {
         'orders': orders,

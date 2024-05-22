@@ -41,6 +41,39 @@
 
 
     <h1></h1>
+
+    <nav>
+        <h1>Order Table</h1>
+        <input type="date" id="filterDate">
+        <input type="text" id="filterTableID" placeholder="Table ID">
+        <input type="text" id="filterOrderID" placeholder="Order ID">
+        <button onclick="filter()">Apply Filters</button>
+    </nav>
+    
+    <script>
+        function filter() {
+            var filterDate = document.getElementById("filterDate").value;
+            var filterTableID = document.getElementById("filterTableID").value.trim();
+            var filterOrderID = document.getElementById("filterOrderID").value.trim();
+
+            var tableBody = document.getElementById("OrderTable").getElementsByTagName("tbody")[0];
+            var rows = tableBody.getElementsByTagName("tr");
+
+            for (var i = 0; i < rows.length; i++) {
+                var row = rows[i];
+                var dateCell = row.getElementsByTagName("td")[3].textContent.trim(); // Assuming date is in the 4th column (index 3)
+                var tableIDCell = row.getElementsByTagName("td")[0].textContent.trim(); // Assuming table ID is in the 1st column (index 0)
+                var orderIDCell = row.getElementsByTagName("td")[4].textContent.trim(); // Assuming order ID is in the 5th column (index 4)
+
+                // Check if all filter conditions match
+                if ((!filterDate || dateCell === filterDate) && (!filterTableID || tableIDCell === filterTableID) && (!filterOrderID || orderIDCell === filterOrderID)) {
+                    row.style.display = ""; // Show the row if all conditions match
+                } else {
+                    row.style.display = "none"; // Hide the row if any condition doesn't match
+                }
+            }
+        }
+    </script>
     
     <table id="OrderTable">
         <thead>
