@@ -5,6 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cart</title>
 </head>
+
+<script>
+    function validateForm(event) {
+        const tableNumberInput = document.getElementById('table_number');
+        if (tableNumberInput.value.trim() === '') {
+            alert('Please enter a table number.');
+            event.preventDefault();
+        }
+    }
+</script>
+
 {% include 'dashboard.html' %}
 <body>
     <div class="content-container">
@@ -65,10 +76,10 @@
                 <th>Grand Total:<br><br>{{ grand_total }}</th>
             </tr>
         </table>
-        <form id="checkoutForm" method="POST" action="{% url 'checkout' %}">
+        <form id="checkoutForm" method="POST" action="{% url 'checkout' %}" onsubmit="validateForm(event)">
             {% csrf_token %}
             <label for="table_number">Table Number:</label>
-            <input type="text" id="table_number" name="table_number">
+            <input type="text" id="table_number" name="table_number" value="{{ table_no }}">
             <button type="submit">Checkout</button>
         </form>
     </div>

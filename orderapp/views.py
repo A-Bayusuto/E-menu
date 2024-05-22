@@ -185,6 +185,7 @@ def CartPage(request):
     # Retrieve the cart_items from the cookie or initialize an empty dictionary
     cart_items_json = request.COOKIES.get('cart_items', '{}')
     cart_items = json.loads(cart_items_json)
+    table_no = request.COOKIES.get('table_id', '{}')
 
     items = []
     grand_total = 0
@@ -210,6 +211,7 @@ def CartPage(request):
     context = {
         'items': items,
         'grand_total': grand_total,
+        'table_no' : int(table_no),
     }
 
     return render(request, 'cart.html', context)
@@ -409,13 +411,13 @@ def checkout_success(request):
 @user_in_group_or_staff(['Store_Owner', 'Employee'])
 def orderlist(request):
     supplier = get_supplier(request)
-    start_date = date.today() - timedelta(days=365)
+    start_date = date.today() - timedelta(days=30)
     current_date = date.today()
     orders = OrderTable.objects.filter(
         order_date__order_date__range=[start_date, current_date],
         supplier__name = supplier
         # order_status="Pending"
-    )    
+    ).order_by('-order_date__order_date')
     form = OrderStatusForm()  # Create an instance of the form
     context = {
         'orders': orders,
@@ -426,7 +428,7 @@ def orderlist(request):
 @user_in_group_or_staff(['Store_Owner', 'Employee'])
 def orderlist_pending(request):
     supplier = get_supplier(request)
-    start_date = date.today() - timedelta(days=365)
+    start_date = date.today() - timedelta(days=30)
     current_date = date.today()
     orders = OrderTable.objects.filter(
         order_date__order_date__range=[start_date, current_date],
@@ -444,7 +446,7 @@ def orderlist_pending(request):
 @user_in_group_or_staff(['Store_Owner', 'Employee'])
 def orderlist_finished(request):
     supplier = get_supplier(request)
-    start_date = date.today() - timedelta(days=365)
+    start_date = date.today() - timedelta(days=30)
     current_date = date.today()
     orders = OrderTable.objects.filter(
         order_date__order_date__range=[start_date, current_date],
@@ -461,7 +463,7 @@ def orderlist_finished(request):
 @user_in_group_or_staff(['Store_Owner', 'Employee'])
 def orderlist_cancelled(request):
     supplier = get_supplier(request)
-    start_date = date.today() - timedelta(days=365)
+    start_date = date.today() - timedelta(days=30)
     current_date = date.today()
     orders = OrderTable.objects.filter(
         order_date__order_date__range=[start_date, current_date],
@@ -831,6 +833,10 @@ def edit_user(request, user_id):
 def user_list(request):
     users = User.objects.all()
     return render(request, 'user_list.html', {'users': users})
+
+    # supplier = get_supplier(request)
+    # users = User.objects.filter(groups=supplier)
+    # return render(request, 'user_list.html', {'users': users})
 
 # @user_passes_test(lambda u: u.is_superuser or u.is_staff)
 # def change_password(request):
