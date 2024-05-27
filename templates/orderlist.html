@@ -50,31 +50,6 @@
         <button onclick="filter()">Apply Filters</button>
     </nav>
     
-    <script>
-        function filter() {
-            var filterDate = document.getElementById("filterDate").value;
-            var filterTableID = document.getElementById("filterTableID").value.trim();
-            var filterOrderID = document.getElementById("filterOrderID").value.trim();
-
-            var tableBody = document.getElementById("OrderTable").getElementsByTagName("tbody")[0];
-            var rows = tableBody.getElementsByTagName("tr");
-
-            for (var i = 0; i < rows.length; i++) {
-                var row = rows[i];
-                var dateCell = row.getElementsByTagName("td")[3].textContent.trim(); // Assuming date is in the 4th column (index 3)
-                var tableIDCell = row.getElementsByTagName("td")[0].textContent.trim(); // Assuming table ID is in the 1st column (index 0)
-                var orderIDCell = row.getElementsByTagName("td")[4].textContent.trim(); // Assuming order ID is in the 5th column (index 4)
-
-                // Check if all filter conditions match
-                if ((!filterDate || dateCell === filterDate) && (!filterTableID || tableIDCell === filterTableID) && (!filterOrderID || orderIDCell === filterOrderID)) {
-                    row.style.display = ""; // Show the row if all conditions match
-                } else {
-                    row.style.display = "none"; // Hide the row if any condition doesn't match
-                }
-            }
-        }
-    </script>
-    
     <table id="OrderTable">
         <thead>
             <tr>
@@ -154,6 +129,45 @@
             });
         });
     });
+
+    function formatDate(dateStr) {
+            const months = {
+                'January': '01', 'February': '02', 'March': '03',
+                'April': '04', 'May': '05', 'June': '06',
+                'July': '07', 'August': '08', 'September': '09',
+                'October': '10', 'November': '11', 'December': '12'
+            };
+            const parts = dateStr.split(' ');
+            const year = parts[2];
+            const month = months[parts[0]];
+            const day = parts[1].replace(',', '').padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function filter() {
+            const filterDate = document.getElementById("filterDate").value;
+            const filterTableID = document.getElementById("filterTableID").value.trim();
+            const filterOrderID = document.getElementById("filterOrderID").value.trim();
+
+            const tableBody = document.getElementById("OrderTable").getElementsByTagName("tbody")[0];
+            const rows = tableBody.getElementsByTagName("tr");
+
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                const dateCell = row.getElementsByTagName("td")[3].textContent.trim(); // Date is in the 4th column (index 3)
+                const tableIDCell = row.getElementsByTagName("td")[0].textContent.trim(); // Table ID is in the 1st column (index 0)
+                const orderIDCell = row.getElementsByTagName("td")[4].textContent.trim(); // Order ID is in the 5th column (index 4)
+
+                const formattedDateCell = formatDate(dateCell);
+
+                // Check if all filter conditions match
+                if ((!filterDate || formattedDateCell === filterDate) && (!filterTableID || tableIDCell === filterTableID) && (!filterOrderID || orderIDCell === filterOrderID)) {
+                    row.style.display = ""; // Show the row if all conditions match
+                } else {
+                    row.style.display = "none"; // Hide the row if any condition doesn't match
+                }
+            }
+        }
 
     function filterTable(filterBy) {
     // Get all table rows
