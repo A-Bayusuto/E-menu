@@ -608,23 +608,60 @@ def get_kpi_per_years(supplier_name):
         })
     return kpi_years
 
-@user_in_group('Store_Owner')
+@user_in_groups(['Store_Owner', 'Manager'])
 def sales_analytics(request):
-    supplier_name = get_supplier(request)
-    weekly_kpi = get_kpi_per_weeks(supplier_name)
-    monthly_kpi = get_kpi_per_months(supplier_name)
-    yearly_kpi = get_kpi_per_years(supplier_name)
-
-    # print('1 :', weekly_kpi)
-    # print('2 :', monthly_kpi)
-    # print('3 :', yearly_kpi)    
+    user_groups = request.user.groups.values_list('name', flat=True)
     
-    context = {
-        'monthly_kpi': monthly_kpi,
-        'weekly_kpi': weekly_kpi,
-        'yearly_kpi': yearly_kpi,
-    }
-    return render(request, 'analytics_sales.html', context)
+    if 'Store_Owner' in user_groups:
+        supplier_name = get_supplier(request)
+        weekly_kpi = get_kpi_per_weeks(supplier_name)
+        monthly_kpi = get_kpi_per_months(supplier_name)
+        yearly_kpi = get_kpi_per_years(supplier_name)
+        
+        context = {
+            'monthly_kpi': monthly_kpi,
+            'weekly_kpi': weekly_kpi,
+            'yearly_kpi': yearly_kpi,
+        }
+        return render(request, 'analytics_sales.html', context)
+    
+    elif 'Manager' in user_groups:
+        if request.method == 'POST':
+            suppliers = list(Supplier.objects.all())
+            suppliers.insert(0, Supplier(supplier_id=0, name='All'))  # Use Supplier object instead of dict
+            supplier_name = request.POST.get('supplier')
+            
+            if supplier_name != '0':
+                weekly_kpi = get_kpi_per_weeks(supplier_name)
+                monthly_kpi = get_kpi_per_months(supplier_name)
+                yearly_kpi = get_kpi_per_years(supplier_name)
+            else:
+                weekly_kpi = get_kpi_per_weeks_admin()
+                monthly_kpi = get_kpi_per_months_admin()
+                yearly_kpi = get_kpi_per_years_admin()
+            
+            context = {
+                'monthly_kpi': monthly_kpi,
+                'weekly_kpi': weekly_kpi,
+                'yearly_kpi': yearly_kpi,
+                'suppliers': suppliers,
+                'selected_supplier': supplier_name,  # Include the selected supplier in the context
+            }
+            return render(request, 'analytics_sales_overview.html', context)
+        
+        suppliers = list(Supplier.objects.all())
+        suppliers.insert(0, Supplier(supplier_id=0, name='All'))
+        weekly_kpi = get_kpi_per_weeks_admin()
+        monthly_kpi = get_kpi_per_months_admin()
+        yearly_kpi = get_kpi_per_years_admin()
+
+        context = {
+            'monthly_kpi': monthly_kpi,
+            'weekly_kpi': weekly_kpi,
+            'yearly_kpi': yearly_kpi,
+            'suppliers': suppliers,
+        }
+        return render(request, 'analytics_sales_overview.html', context)
 
 
 def get_kpi_per_weeks_admin():
@@ -684,6 +721,24 @@ def get_kpi_per_years_admin():
 
 @user_in_group('Manager')
 def sales_analytics_overview(request):
+    if request.method == 'POST':
+        suppliers = list(Supplier.objects.all()) 
+        suppliers.insert(0, {'supplier_id': '0', 'name': 'All'})
+        supplier_name = request.POST.get('supplier')
+        weekly_kpi = get_kpi_per_weeks(supplier_name)
+        monthly_kpi = get_kpi_per_months(supplier_name)
+        yearly_kpi = get_kpi_per_years(supplier_name)
+        
+        context = {
+            'monthly_kpi': monthly_kpi,
+            'weekly_kpi': weekly_kpi,
+            'yearly_kpi': yearly_kpi,
+            'suppliers' : suppliers,
+        }
+        return render(request, 'analytics_sales_overview.html', context)
+    
+    suppliers = list(Supplier.objects.all()) 
+    suppliers.insert(0, {'supplier_id': '0', 'name': 'All'})
     weekly_kpi = get_kpi_per_weeks_admin()
     monthly_kpi = get_kpi_per_months_admin()
     yearly_kpi = get_kpi_per_years_admin()
@@ -692,6 +747,7 @@ def sales_analytics_overview(request):
         'monthly_kpi': monthly_kpi,
         'weekly_kpi': weekly_kpi,
         'yearly_kpi': yearly_kpi,
+        'suppliers' : suppliers,
     }
     return render(request, 'analytics_sales_overview.html', context)
 

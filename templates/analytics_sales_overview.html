@@ -6,6 +6,11 @@
     <title>Analytics</title>
     <!-- Include Chart.js library -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        function submitForm() {
+            document.getElementById("supplierForm").submit();
+        }
+    </script>
     <style>
         /* Apply styles to contain content within 75% of the screen */
         .container {
@@ -22,46 +27,27 @@
             <div class="container">
                 <h1>Analytics</h1>
 
-                <h2>Monthly KPIs</h2>
-                <canvas id="monthlyChart" width="400" height="200"></canvas>
+                <form method="POST" action="{% url 'sales_analytics' %}" id="supplierForm">
+                    {% csrf_token %}
+                    <label for="supplier">Select Supplier:</label>
+                    <select name="supplier" id="supplier" onchange="submitForm()">
+                        {% for supplier in suppliers %}
+                            <option value="{{ supplier.name }}">{{ supplier.name }}</option>
+                        {% endfor %}
+                    </select>
+                </form>
+            
 
                 <h2>Weekly KPIs</h2>
                 <canvas id="weeklyChart" width="400" height="200"></canvas>
+
+                <h2>Monthly KPIs</h2>
+                <canvas id="monthlyChart" width="400" height="200"></canvas>
 
                 <h2>Yearly KPIs</h2>
                 <canvas id="yearlyChart" width="400" height="200"></canvas>
 
                 <script>
-                    // Monthly KPI Chart
-                    var monthlyLabels = [];
-                    var monthlyData = [];
-                    {% for kpi in monthly_kpi %}
-                        monthlyLabels.push('{{ kpi.month }}-{{ kpi.year }}');
-                        monthlyData.push({{ kpi.total_sales }});
-                    {% endfor %}
-
-                    var monthlyChart = new Chart(document.getElementById('monthlyChart'), {
-                        type: 'line',
-                        data: {
-                            labels: monthlyLabels,
-                            datasets: [{
-                                label: 'Total Sales',
-                                backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                                borderColor: 'rgba(54, 162, 235, 1)',
-                                borderWidth: 1,
-                                data: monthlyData
-                            }]
-                        },
-                        options: {
-                            scales: {
-                                yAxes: [{
-                                    ticks: {
-                                        beginAtZero: true
-                                    }
-                                }]
-                            }
-                        }
-                    });
 
                     // Weekly KPI Chart
                     var weeklyLabels = [];
@@ -81,6 +67,37 @@
                                 borderColor: 'rgba(255, 99, 132, 1)',
                                 borderWidth: 1,
                                 data: weeklyData
+                            }]
+                        },
+                        options: {
+                            scales: {
+                                yAxes: [{
+                                    ticks: {
+                                        beginAtZero: true
+                                    }
+                                }]
+                            }
+                        }
+                    });
+
+                    // Monthly KPI Chart
+                    var monthlyLabels = [];
+                    var monthlyData = [];
+                    {% for kpi in monthly_kpi %}
+                        monthlyLabels.push('{{ kpi.month }}-{{ kpi.year }}');
+                        monthlyData.push({{ kpi.total_sales }});
+                    {% endfor %}
+
+                    var monthlyChart = new Chart(document.getElementById('monthlyChart'), {
+                        type: 'line',
+                        data: {
+                            labels: monthlyLabels,
+                            datasets: [{
+                                label: 'Total Sales',
+                                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                                borderColor: 'rgba(54, 162, 235, 1)',
+                                borderWidth: 1,
+                                data: monthlyData
                             }]
                         },
                         options: {
