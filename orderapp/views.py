@@ -568,7 +568,7 @@ def get_kpi_per_months(supplier_name):
     # Get KPIs for the last 24 months
     kpi_months = []
     current_date = now()
-    for i in range(23, -1, -1):
+    for i in range(23, 0, -1):
         target_date = current_date - timedelta(days=i*30)
         year = target_date.year
         month = target_date.month
@@ -619,6 +619,7 @@ def sales_analytics(request):
         yearly_kpi = get_kpi_per_years(supplier_name)
         
         context = {
+            'selected_supplier': supplier_name,
             'monthly_kpi': monthly_kpi,
             'weekly_kpi': weekly_kpi,
             'yearly_kpi': yearly_kpi,
@@ -629,9 +630,10 @@ def sales_analytics(request):
         if request.method == 'POST':
             suppliers = list(Supplier.objects.all())
             suppliers.insert(0, Supplier(supplier_id=0, name='All'))  # Use Supplier object instead of dict
+            suppliers.insert(0, Supplier(supplier_id='', name=''))    # Empty option
             supplier_name = request.POST.get('supplier')
-            
-            if supplier_name != '0':
+
+            if supplier_name != '' and supplier_name != "All":
                 weekly_kpi = get_kpi_per_weeks(supplier_name)
                 monthly_kpi = get_kpi_per_months(supplier_name)
                 yearly_kpi = get_kpi_per_years(supplier_name)
@@ -654,12 +656,13 @@ def sales_analytics(request):
         weekly_kpi = get_kpi_per_weeks_admin()
         monthly_kpi = get_kpi_per_months_admin()
         yearly_kpi = get_kpi_per_years_admin()
-
+        supplier_name = 'All'
         context = {
             'monthly_kpi': monthly_kpi,
             'weekly_kpi': weekly_kpi,
             'yearly_kpi': yearly_kpi,
             'suppliers': suppliers,
+            'selected_supplier': supplier_name,
         }
         return render(request, 'analytics_sales_overview.html', context)
 

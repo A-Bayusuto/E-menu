@@ -17,6 +17,59 @@
             max-width: 75%;
             margin: 0 auto; /* Center the container */
         }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        h2 {
+            text-align: center;
+            color: #555;
+            margin-top: 40px;
+        }
+        table {
+            border-collapse: collapse;
+            width: 80%;
+            margin: 20px auto;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: center;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+            font-weight: bold;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+        button {
+            display: block;
+            width: 150px;
+            margin: 20px auto;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
     </style>
     {% include 'dashboard_user.html' %}
 </head>
@@ -36,20 +89,42 @@
                         {% endfor %}
                     </select>
                 </form>
-            
 
-                <h2>Weekly KPIs</h2>
+                <h1>{{ selected_supplier }}</h1>
+
+                <h2>Monthly Sales</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Year</th>
+                            <th>Month</th>
+                            <th>Total Sales</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for kpi in monthly_kpi %}
+                        <tr>
+                            <td>{{ kpi.year }}</td>
+                            <td>{{ kpi.month }}</td>
+                            <td>{{ kpi.total_sales }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+
+                <h2>Weekly Sales</h2>
                 <canvas id="weeklyChart" width="400" height="200"></canvas>
 
-                <h2>Monthly KPIs</h2>
+                <h2>Monthly Sales</h2>
                 <canvas id="monthlyChart" width="400" height="200"></canvas>
 
-                <h2>Yearly KPIs</h2>
+                <h2>Yearly Sales</h2>
                 <canvas id="yearlyChart" width="400" height="200"></canvas>
 
                 <script>
 
-                    // Weekly KPI Chart
+                    // Weekly Sales Chart
                     var weeklyLabels = [];
                     var weeklyData = [];
                     {% for kpi in weekly_kpi %}
@@ -80,7 +155,7 @@
                         }
                     });
 
-                    // Monthly KPI Chart
+                    // Monthly Sales Chart
                     var monthlyLabels = [];
                     var monthlyData = [];
                     {% for kpi in monthly_kpi %}
@@ -89,7 +164,7 @@
                     {% endfor %}
 
                     var monthlyChart = new Chart(document.getElementById('monthlyChart'), {
-                        type: 'line',
+                        type: 'bar',
                         data: {
                             labels: monthlyLabels,
                             datasets: [{
@@ -111,7 +186,7 @@
                         }
                     });
 
-                    // Yearly KPI Chart
+                    // Yearly Sales Chart
                     var yearlyLabels = [];
                     var yearlyData = [];
                     {% for kpi in yearly_kpi %}
