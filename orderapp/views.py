@@ -568,7 +568,35 @@ def get_kpi_per_months(supplier_name):
     # Get KPIs for the last 24 months
     kpi_months = []
     current_date = now()
-    for i in range(23, 0, -1):
+    for i in range(23, -1, -1):
+        target_date = current_date - timedelta(days=i*30)
+        year = target_date.year
+        month = target_date.month
+        _, last_day = monthrange(year, month)
+        start_date = target_date.replace(day=1)
+        end_date = target_date.replace(day=last_day)
+        monthly_sales = OrderTable.objects.filter(
+            order_date__order_date__range=[start_date, end_date],
+            supplier=supplier,
+            order_status = "Finished"
+        ).aggregate(total_sales=Sum('total'))['total_sales'] or 0
+        kpi_months.append({
+            'month': month,
+            'year': year,
+            'total_sales': monthly_sales
+        })
+    return kpi_months
+
+def get_kpi_per_months_specific_start(supplier_name, current_date=None):
+    try:
+        supplier = Supplier.objects.get(name=supplier_name)
+    except Supplier.DoesNotExist:
+        return []
+    # Get KPIs for the last 24 months
+    if current_date == None:
+        current_date = now().date()
+    kpi_months = []
+    for i in range(23, -1, -1):
         target_date = current_date - timedelta(days=i*30)
         year = target_date.year
         month = target_date.month
@@ -614,17 +642,37 @@ def sales_analytics(request):
     
     if 'Store_Owner' in user_groups:
         supplier_name = get_supplier(request)
-        weekly_kpi = get_kpi_per_weeks(supplier_name)
-        monthly_kpi = get_kpi_per_months(supplier_name)
-        yearly_kpi = get_kpi_per_years(supplier_name)
-        
-        context = {
-            'selected_supplier': supplier_name,
-            'monthly_kpi': monthly_kpi,
-            'weekly_kpi': weekly_kpi,
-            'yearly_kpi': yearly_kpi,
-        }
-        return render(request, 'analytics_sales.html', context)
+
+        if request.method == 'POST':
+            current_date = request.POST.get('current_date')
+            if not current_date:
+                current_date = now().date()
+            else:
+                current_date = datetime.strptime(current_date, '%Y-%m-%d').date()
+            weekly_kpi = get_kpi_per_weeks(supplier_name)
+            monthly_kpi = get_kpi_per_months_specific_start(supplier_name, current_date)
+            yearly_kpi = get_kpi_per_years(supplier_name)
+            
+            context = {
+                'selected_supplier': supplier_name,
+                'monthly_kpi': monthly_kpi,
+                'weekly_kpi': weekly_kpi,
+                'yearly_kpi': yearly_kpi,
+            }
+            return render(request, 'analytics_sales.html', context)
+
+        else:
+            weekly_kpi = get_kpi_per_weeks(supplier_name)
+            monthly_kpi = get_kpi_per_months(supplier_name)
+            yearly_kpi = get_kpi_per_years(supplier_name)
+            
+            context = {
+                'selected_supplier': supplier_name,
+                'monthly_kpi': monthly_kpi,
+                'weekly_kpi': weekly_kpi,
+                'yearly_kpi': yearly_kpi,
+            }
+            return render(request, 'analytics_sales.html', context)
     
     elif 'Manager' in user_groups:
         if request.method == 'POST':
@@ -632,14 +680,19 @@ def sales_analytics(request):
             suppliers.insert(0, Supplier(supplier_id=0, name='All'))  # Use Supplier object instead of dict
             suppliers.insert(0, Supplier(supplier_id='', name=''))    # Empty option
             supplier_name = request.POST.get('supplier')
+            current_date = request.POST.get('current_date')
+            if not current_date:
+                current_date = now().date()
+            else:
+                current_date = datetime.strptime(current_date, '%Y-%m-%d').date()
 
             if supplier_name != '' and supplier_name != "All":
                 weekly_kpi = get_kpi_per_weeks(supplier_name)
-                monthly_kpi = get_kpi_per_months(supplier_name)
+                monthly_kpi = get_kpi_per_months_specific_start(supplier_name, current_date)
                 yearly_kpi = get_kpi_per_years(supplier_name)
             else:
                 weekly_kpi = get_kpi_per_weeks_admin()
-                monthly_kpi = get_kpi_per_months_admin()
+                monthly_kpi = get_kpi_per_months_admin(current_date)
                 yearly_kpi = get_kpi_per_years_admin()
             
             context = {
@@ -686,9 +739,10 @@ def get_kpi_per_weeks_admin():
 
     return kpi_weeks
 
-def get_kpi_per_months_admin():
+def get_kpi_per_months_admin(current_date=None):
     kpi_months = []
-    current_date = now()
+    if current_date is None:
+        current_date = now().date()
     for i in range(23, -1, -1):
         target_date = current_date - timedelta(days=i*30)
         year = target_date.year

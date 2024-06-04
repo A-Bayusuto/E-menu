@@ -75,6 +75,13 @@
             <div class="container">
                 <h1>Sales Analytics</h1>
 
+                <form method="POST" action="{% url 'sales_analytics' %}" id="supplierForm">
+                    {% csrf_token %}
+                    <label for="current_date">Date:</label>
+                    <input type="date" name="current_date" id="current_date">
+                    <input type="submit" value="Submit">
+                </form>
+
                 <h2>Monthly Sales</h2>
                 <table>
                     <thead>

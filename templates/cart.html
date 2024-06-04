@@ -88,7 +88,7 @@
         <form id="checkoutForm" method="POST" action="{% url 'checkout' %}" onsubmit="validateForm(event)">
             {% csrf_token %}
             <label for="table_number">Table Number:</label>
-            <input type="text" id="table_number" name="table_number" value="{{ table_no }}">
+            <input type="text" id="table_number" name="table_number" value="{{ table_no }}" required>
             <button type="submit">Checkout</button>
         </form>
     </div>

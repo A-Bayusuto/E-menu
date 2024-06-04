@@ -83,11 +83,14 @@
                 <form method="POST" action="{% url 'sales_analytics' %}" id="supplierForm">
                     {% csrf_token %}
                     <label for="supplier">Select Supplier:</label>
-                    <select name="supplier" id="supplier" onchange="submitForm()">
+                    <select name="supplier" id="supplier" required>
                         {% for supplier in suppliers %}
                             <option value="{{ supplier.name }}">{{ supplier.name }}</option>
                         {% endfor %}
                     </select>
+                    <label for="current_date">Date:</label>
+                    <input type="date" name="current_date" id="current_date">
+                    <input type="submit" value="Submit">
                 </form>
 
                 <h1>{{ selected_supplier }}</h1>
