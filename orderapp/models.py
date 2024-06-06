@@ -23,6 +23,7 @@ class Menu(models.Model):
     summary = models.TextField(null=True, blank=True)
     picture_address = models.ImageField(null=True, blank=True, upload_to="images/", default="images/default_image.jpg")
     supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE)
+    inStock = models.BooleanField(default=True)
 
     def __str__(self):
         return self.item
