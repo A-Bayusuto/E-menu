@@ -96,10 +96,10 @@ def MenuPage(request):
     s_id = request.COOKIES.get('selected_supplier')
 
     if s_id == None or int(s_id) == 0:
-        appetizers = Menu.objects.filter(category='Appetizer')
-        main_courses = Menu.objects.filter(category='Main Course')
-        desserts = Menu.objects.filter(category='Dessert')
-        drinks = Menu.objects.filter(category='Drink')
+        appetizers = Menu.objects.filter(category='Appetizer', inStock=True)
+        main_courses = Menu.objects.filter(category='Main Course', inStock=True)
+        desserts = Menu.objects.filter(category='Dessert', inStock=True)
+        drinks = Menu.objects.filter(category='Drink', inStock=True)
         current_name = "All"
         context = {
             'appetizers': appetizers,
@@ -114,11 +114,11 @@ def MenuPage(request):
 
     elif s_id:
         # If no supplier is selected (cookie not set), show all menu items without redirecting
-        appetizers = Menu.objects.filter(category='Appetizer', supplier_id= s_id)
-        main_courses = Menu.objects.filter(category='Main Course', supplier_id= s_id)
-        desserts = Menu.objects.filter(category='Dessert', supplier_id= s_id)
-        drinks = Menu.objects.filter(category='Drink', supplier_id= s_id)
-        current_supplier = Supplier.objects.get(supplier_id=s_id)
+        appetizers = Menu.objects.filter(category='Appetizer', supplier_id= s_id, inStock=True)
+        main_courses = Menu.objects.filter(category='Main Course', supplier_id= s_id, inStock=True)
+        desserts = Menu.objects.filter(category='Dessert', supplier_id= s_id, inStock=True)
+        drinks = Menu.objects.filter(category='Drink', supplier_id= s_id, inStock=True)
+        current_supplier = Supplier.objects.get(supplier_id=s_id, inStock=True)
         current_name = current_supplier.name
 
         context = {
@@ -134,10 +134,10 @@ def MenuPage(request):
 
     else:
         # If no supplier is selected (cookie not set), show all menu items without redirecting
-        appetizers = Menu.objects.filter(category='Appetizer')
-        main_courses = Menu.objects.filter(category='Main Course')
-        desserts = Menu.objects.filter(category='Dessert')
-        drinks = Menu.objects.filter(category='Drink')
+        appetizers = Menu.objects.filter(category='Appetizer', inStock=True)
+        main_courses = Menu.objects.filter(category='Main Course', inStock=True)
+        desserts = Menu.objects.filter(category='Dessert', inStock=True)
+        drinks = Menu.objects.filter(category='Drink', inStock=True)
         current_name = "All"
 
         context = {
@@ -535,36 +535,86 @@ def update_order_status(request):
         return JsonResponse({'error': 'Invalid request.'}, status=400)
     
 
-def get_kpi_per_weeks(supplier_name):
+# def get_kpi_per_weeks(supplier_name):
+#     try:
+#         supplier = Supplier.objects.get(name=supplier_name)
+#     except Supplier.DoesNotExist:
+#         return []
+#     # Get KPIs for the last 52 weeks
+#     kpi_weeks = []
+#     current_date = now()
+#     for i in range(52, 0, -1):
+#         start_date = current_date - timedelta(days=current_date.weekday() + (i - 1) * 7)
+#         end_date = start_date + timedelta(days=6)
+#         weekly_sales = OrderTable.objects.filter(
+#             order_date__order_date__range=[start_date, end_date],
+#             supplier=supplier,
+#             order_status = "Finished"
+#         ).aggregate(total_sales=Sum('total'))['total_sales'] or 0
+#         kpi_weeks.append({
+#             'week': i,
+#             'start_date': start_date,
+#             'end_date': end_date,
+#             'total_sales': weekly_sales
+#         })
+
+#     return kpi_weeks
+
+def get_kpi_per_weeks(supplier_name, start_date=None, end_date=None):
     try:
         supplier = Supplier.objects.get(name=supplier_name)
     except Supplier.DoesNotExist:
         return []
-    # Get KPIs for the last 52 weeks
+
+    if not end_date:
+        end_date = now()
+    if not start_date:
+        start_date = end_date - timedelta(weeks=52)
+
+    # Calculate the number of weeks between start_date and end_date
+    num_weeks = (end_date - start_date).days // 7
+
     kpi_weeks = []
-    current_date = now()
-    for i in range(52, 0, -1):
-        start_date = current_date - timedelta(days=current_date.weekday() + (i - 1) * 7)
-        end_date = start_date + timedelta(days=6)
+    print("num weeks = ", num_weeks)
+
+    for i in range(num_weeks, 0, -1):
+        week_start_date = start_date
+        week_end_date = week_start_date + timedelta(days=7)
+
+        if week_start_date < start_date:
+            break
         weekly_sales = OrderTable.objects.filter(
-            order_date__order_date__range=[start_date, end_date],
+            order_date__order_date__range=[week_start_date, week_end_date],
             supplier=supplier,
-            order_status = "Finished"
+            order_status="Finished"
         ).aggregate(total_sales=Sum('total'))['total_sales'] or 0
+
         kpi_weeks.append({
-            'week': i,
-            'start_date': start_date,
-            'end_date': end_date,
+            'week': (str(week_start_date) + " - " + str(week_end_date)),
+            'start_date': week_start_date,
+            'end_date': week_end_date,
             'total_sales': weekly_sales
         })
+        start_date = week_end_date + timedelta(days=1)
 
     return kpi_weeks
 
-def get_kpi_per_months(supplier_name):
+def get_kpi_per_months(supplier_name, start_date=None, end_date=None):
     try:
         supplier = Supplier.objects.get(name=supplier_name)
     except Supplier.DoesNotExist:
         return []
+    
+    
+    if not end_date:
+        end_date = now()
+    if not start_date:
+        start_date = end_date - timedelta(weeks=52)
+
+    # Ensure the dates cover exactly 24 months if no specific date range is given
+    if end_date - start_date > timedelta(days=24 * 30):
+        start_date = end_date - timedelta(days=24 * 30)
+
     # Get KPIs for the last 24 months
     kpi_months = []
     current_date = now()
@@ -587,32 +637,49 @@ def get_kpi_per_months(supplier_name):
         })
     return kpi_months
 
-def get_kpi_per_months_specific_start(supplier_name, current_date=None):
+def get_kpi_per_months(supplier_name, start_date=None, end_date=None):
     try:
         supplier = Supplier.objects.get(name=supplier_name)
     except Supplier.DoesNotExist:
         return []
-    # Get KPIs for the last 24 months
-    if current_date == None:
-        current_date = now().date()
+    
+    if not end_date:
+        end_date = now().date()
+    if not start_date:
+        start_date = end_date - timedelta(days=24 * 30)
+
+    # Ensure the dates cover exactly 24 months if no specific date range is given
+    if end_date - start_date > timedelta(days=24 * 30):
+        start_date = end_date - timedelta(days=24 * 30)
+
     kpi_months = []
-    for i in range(23, -1, -1):
-        target_date = current_date - timedelta(days=i*30)
-        year = target_date.year
-        month = target_date.month
+
+    current_date = start_date
+    while current_date <= end_date:
+        year = current_date.year
+        month = current_date.month
         _, last_day = monthrange(year, month)
-        start_date = target_date.replace(day=1)
-        end_date = target_date.replace(day=last_day)
+        month_start_date = current_date.replace(day=1)
+        month_end_date = current_date.replace(day=last_day)
+
         monthly_sales = OrderTable.objects.filter(
-            order_date__order_date__range=[start_date, end_date],
+            order_date__order_date__range=[month_start_date, month_end_date],
             supplier=supplier,
-            order_status = "Finished"
+            order_status="Finished"
         ).aggregate(total_sales=Sum('total'))['total_sales'] or 0
+
         kpi_months.append({
             'month': month,
             'year': year,
             'total_sales': monthly_sales
         })
+
+        # Move to the first day of the next month
+        if month == 12:
+            current_date = current_date.replace(year=year + 1, month=1, day=1)
+        else:
+            current_date = current_date.replace(month=month + 1, day=1)
+
     return kpi_months
 
 
@@ -644,13 +711,17 @@ def sales_analytics(request):
         supplier_name = get_supplier(request)
 
         if request.method == 'POST':
-            current_date = request.POST.get('current_date')
-            if not current_date:
-                current_date = now().date()
+            start_date = request.POST.get('start_date')
+            end_date = request.POST.get('end_date')
+            if not end_date:
+                start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+                end_date = now().date()
             else:
-                current_date = datetime.strptime(current_date, '%Y-%m-%d').date()
-            weekly_kpi = get_kpi_per_weeks(supplier_name)
-            monthly_kpi = get_kpi_per_months_specific_start(supplier_name, current_date)
+                start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+                end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+            
+            weekly_kpi = get_kpi_per_weeks(supplier_name, start_date, end_date)
+            monthly_kpi = get_kpi_per_months(supplier_name, start_date, end_date)
             yearly_kpi = get_kpi_per_years(supplier_name)
             
             context = {
@@ -688,7 +759,7 @@ def sales_analytics(request):
 
             if supplier_name != '' and supplier_name != "All":
                 weekly_kpi = get_kpi_per_weeks(supplier_name)
-                monthly_kpi = get_kpi_per_months_specific_start(supplier_name, current_date)
+                monthly_kpi = get_kpi_per_months(supplier_name)
                 yearly_kpi = get_kpi_per_years(supplier_name)
             else:
                 weekly_kpi = get_kpi_per_weeks_admin()
