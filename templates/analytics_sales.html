@@ -186,6 +186,10 @@
                         yearlyData.push({{ kpi.total_sales }});
                     {% endfor %}
 
+                    // Reverse the order of the data
+                    yearlyLabels.reverse();
+                    yearlyData.reverse();
+
                     var yearlyChart = new Chart(document.getElementById('yearlyChart'), {
                         type: 'bar',
                         data: {

@@ -573,7 +573,8 @@ def get_kpi_per_weeks(supplier_name, start_date=None, end_date=None):
 
     # Calculate the number of weeks between start_date and end_date
     num_weeks = (end_date - start_date).days // 7
-
+    print((end_date - start_date).days)
+    print(num_weeks)
     kpi_weeks = []
 
     for i in range(num_weeks, 0, -1):
@@ -589,12 +590,12 @@ def get_kpi_per_weeks(supplier_name, start_date=None, end_date=None):
         ).aggregate(total_sales=Sum('total'))['total_sales'] or 0
 
         kpi_weeks.append({
-            'week': (str(week_start_date) + " - " + str(week_end_date)),
+            'week': (str(week_start_date + + timedelta(days=1)) + " - " + str(week_end_date)),
             'start_date': week_start_date,
             'end_date': week_end_date,
             'total_sales': weekly_sales
         })
-        start_date = week_end_date + timedelta(days=1)
+        start_date = week_end_date
 
     return kpi_weeks
 
