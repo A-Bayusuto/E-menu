@@ -358,6 +358,8 @@ def checkout(request):
             qty = value
             # Calculate total price for the item
             total_price = float(menu_item.price) * qty
+            total_cost = float(menu_item.cost_price) * qty
+            profit = total_price - total_cost
             grand_total += total_price
 
             # Create OrderDate object for the current date and time
@@ -379,6 +381,8 @@ def checkout(request):
                 order_id=order_id,
                 qty=qty,
                 total=total_price,
+                total_cost = total_cost,
+                profit = profit,
                 order_status='Pending'
             )
             orders.append(order)
