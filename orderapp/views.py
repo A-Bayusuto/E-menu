@@ -88,19 +88,21 @@ def appetizer(request):
 
 def MenuPage(request):
     # Retrieve all suppliers
-    suppliers = list(Supplier.objects.all()) 
+    suppliers = list(Supplier.objects.all())
     suppliers.insert(0, {'supplier_id': '0', 'name': 'All'})
     quantities = range(1, 21)
 
     # Retrieve selected supplier ID from the cookie
     s_id = request.COOKIES.get('selected_supplier')
 
-    if s_id == None or int(s_id) == 0:
+    if s_id is None or int(s_id) == 0:
+        # Show all menu items when no supplier is selected or "All" is selected
         appetizers = Menu.objects.filter(category='Appetizer', inStock=True)
         main_courses = Menu.objects.filter(category='Main Course', inStock=True)
         desserts = Menu.objects.filter(category='Dessert', inStock=True)
         drinks = Menu.objects.filter(category='Drink', inStock=True)
         current_name = "All"
+        
         context = {
             'appetizers': appetizers,
             'main_courses': main_courses,
@@ -108,17 +110,19 @@ def MenuPage(request):
             'drinks': drinks,
             'quantities': quantities,
             'suppliers': suppliers,
-            'current_name' : current_name,
+            'current_name': current_name,
         }
         return render(request, 'menu.html', context)
 
     elif s_id:
-        # If no supplier is selected (cookie not set), show all menu items without redirecting
-        appetizers = Menu.objects.filter(category='Appetizer', supplier_id= s_id, inStock=True)
-        main_courses = Menu.objects.filter(category='Main Course', supplier_id= s_id, inStock=True)
-        desserts = Menu.objects.filter(category='Dessert', supplier_id= s_id, inStock=True)
-        drinks = Menu.objects.filter(category='Drink', supplier_id= s_id, inStock=True)
-        current_supplier = Supplier.objects.get(supplier_id=s_id, inStock=True)
+        # Show menu items for the selected supplier
+        appetizers = Menu.objects.filter(category='Appetizer', supplier_id=s_id, inStock=True)
+        main_courses = Menu.objects.filter(category='Main Course', supplier_id=s_id, inStock=True)
+        desserts = Menu.objects.filter(category='Dessert', supplier_id=s_id, inStock=True)
+        drinks = Menu.objects.filter(category='Drink', supplier_id=s_id, inStock=True)
+
+        # Retrieve the current supplier's name
+        current_supplier = Supplier.objects.get(supplier_id=s_id)
         current_name = current_supplier.name
 
         context = {
@@ -128,12 +132,12 @@ def MenuPage(request):
             'drinks': drinks,
             'quantities': quantities,
             'suppliers': suppliers,
-            'current_name' : current_name,
+            'current_name': current_name,
         }
         return render(request, 'menu.html', context)
 
     else:
-        # If no supplier is selected (cookie not set), show all menu items without redirecting
+        # This block is redundant, as it duplicates the first condition
         appetizers = Menu.objects.filter(category='Appetizer', inStock=True)
         main_courses = Menu.objects.filter(category='Main Course', inStock=True)
         desserts = Menu.objects.filter(category='Dessert', inStock=True)
@@ -147,11 +151,9 @@ def MenuPage(request):
             'drinks': drinks,
             'quantities': quantities,
             'suppliers': suppliers,
-            'current_name' : current_name,
+            'current_name': current_name,
         }
         return render(request, 'menu.html', context)
-
-    
 
 
 def add_to_cart(request):
@@ -587,18 +589,28 @@ def get_kpi_per_weeks(supplier_name, start_date=None, end_date=None):
 
         if week_start_date < start_date:
             break
-        weekly_sales = OrderTable.objects.filter(
+
+        weekly_data = OrderTable.objects.filter(
             order_date__order_date__range=[week_start_date, week_end_date],
             supplier=supplier,
             order_status="Finished"
-        ).aggregate(total_sales=Sum('total'))['total_sales'] or 0
+        ).aggregate(
+            total_sales=Sum('total'),
+            total_cost=Sum('total_cost'),
+            total_profit=Sum('profit')
+        )
+        
+        formatted_week = f"{week_start_date.strftime('%Y-%m-%d')} - {week_end_date.strftime('%Y-%m-%d')}"
 
         kpi_weeks.append({
-            'week': (str(week_start_date + + timedelta(days=1)) + " - " + str(week_end_date)),
+            'week': formatted_week,
             'start_date': week_start_date,
             'end_date': week_end_date,
-            'total_sales': weekly_sales
+            'total_sales': weekly_data['total_sales'] or 0,
+            'total_cost': weekly_data['total_cost'] or 0,
+            'total_profit': weekly_data['total_profit'] or 0,
         })
+
         start_date = week_end_date
 
     return kpi_weeks
@@ -628,16 +640,22 @@ def get_kpi_per_months(supplier_name, start_date=None, end_date=None):
         month_start_date = current_date.replace(day=1)
         month_end_date = current_date.replace(day=last_day)
 
-        monthly_sales = OrderTable.objects.filter(
+        monthly_data = OrderTable.objects.filter(
             order_date__order_date__range=[month_start_date, month_end_date],
             supplier=supplier,
             order_status="Finished"
-        ).aggregate(total_sales=Sum('total'))['total_sales'] or 0
+        ).aggregate(
+            total_sales=Sum('total'),
+            total_cost=Sum('total_cost'),
+            total_profit=Sum('profit')
+        )
 
         kpi_months.append({
             'month': month,
             'year': year,
-            'total_sales': monthly_sales
+            'total_sales': monthly_data['total_sales'] or 0,
+            'total_cost': monthly_data['total_cost'] or 0,
+            'total_profit': monthly_data['total_profit'] or 0,
         })
 
         # Move to the first day of the next month
@@ -658,14 +676,21 @@ def get_kpi_per_years(supplier_name):
     kpi_years = []
     years = OrderDate.objects.values_list('order_year', flat=True).distinct()
     for year in years:
-        yearly_sales = OrderTable.objects.filter(
+        yearly_data = OrderTable.objects.filter(
             order_date__order_date__year=year,
             supplier=supplier,
             order_status = "Finished"
-        ).aggregate(total_sales=Sum('total'))['total_sales'] or 0
+        ).aggregate(
+            total_sales=Sum('total'),
+            total_cost=Sum('total_cost'),
+            total_profit=Sum('profit')
+        )
+
         kpi_years.append({
             'year': year,
-            'total_sales': yearly_sales
+            'total_sales': yearly_data['total_sales'] or 0,
+            'total_cost': yearly_data['total_cost'] or 0,
+            'total_profit': yearly_data['total_profit'] or 0,
         })
     return kpi_years
 

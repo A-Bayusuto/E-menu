@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Menu, OrderDate, OrderTable, Supplier, UserProfile
+from .models import Menu, OrderDate, OrderTable, Supplier
 
 class MenuAdmin(admin.ModelAdmin):
     list_display = ('item', 'category', 'price', 'cost_price', 'supplier', 'inStock')
@@ -31,9 +31,6 @@ class OrderTableAdmin(admin.ModelAdmin):
                 # Return an empty queryset if the user is not in any supplier group
                 return qs.none()
 
-@admin.register(UserProfile)
-class UserProfileAdmin(admin.ModelAdmin):
-    list_display = ('user', 'supplier')
 
 # Register the models with their respective custom admin classes
 admin.site.register(Menu, MenuAdmin)

@@ -91,6 +91,8 @@
                             <th>Year</th>
                             <th>Month</th>
                             <th>Total Sales</th>
+                            <th>Total Cost</th>
+                            <th>Total Profit</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -99,11 +101,14 @@
                             <td>{{ kpi.year }}</td>
                             <td>{{ kpi.month }}</td>
                             <td>{{ kpi.total_sales }}</td>
+                            <td>{{ kpi.total_cost }}</td>
+                            <td>{{ kpi.total_profit }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
                 <br>
+
 
                 <h2>Weekly Sales</h2>
                 <canvas id="weeklyChart" width="400" height="200"></canvas>
@@ -118,23 +123,44 @@
 
                     // Weekly Sales Chart
                     var weeklyLabels = [];
-                    var weeklyData = [];
+                    var salesData = [];
+                    var costData = [];
+                    var profitData = [];
+
                     {% for kpi in weekly_kpi %}
                         weeklyLabels.push('Week {{ kpi.week }}');
-                        weeklyData.push({{ kpi.total_sales }});
+                        salesData.push({{ kpi.total_sales }});
+                        costData.push({{ kpi.total_cost }});
+                        profitData.push({{ kpi.total_profit }});
                     {% endfor %}
 
                     var weeklyChart = new Chart(document.getElementById('weeklyChart'), {
                         type: 'bar',
                         data: {
                             labels: weeklyLabels,
-                            datasets: [{
-                                label: 'Total Sales',
-                                backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                                borderColor: 'rgba(255, 99, 132, 1)',
-                                borderWidth: 1,
-                                data: weeklyData
-                            }]
+                            datasets: [
+                                {
+                                    label: 'Total Sales',
+                                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                                    borderColor: 'rgba(54, 162, 235, 1)',
+                                    borderWidth: 1,
+                                    data: salesData
+                                },
+                                {
+                                    label: 'Total Cost',
+                                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                                    borderColor: 'rgba(255, 99, 132, 1)',
+                                    borderWidth: 1,
+                                    data: costData
+                                },
+                                {
+                                    label: 'Total Profit',
+                                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                                    borderColor: 'rgba(75, 192, 192, 1)',
+                                    borderWidth: 1,
+                                    data: profitData
+                                }
+                            ]
                         },
                         options: {
                             scales: {
@@ -147,25 +173,47 @@
                         }
                     });
 
+
                     // Monthly Sales Chart
                     var monthlyLabels = [];
-                    var monthlyData = [];
+                    var monthlySalesData = [];
+                    var monthlyCostData = [];
+                    var monthlyProfitData = [];
+
                     {% for kpi in monthly_kpi %}
                         monthlyLabels.push('{{ kpi.month }}-{{ kpi.year }}');
-                        monthlyData.push({{ kpi.total_sales }});
+                        monthlySalesData.push({{ kpi.total_sales }});
+                        monthlyCostData.push({{ kpi.total_cost }});
+                        monthlyProfitData.push({{ kpi.total_profit }});
                     {% endfor %}
 
                     var monthlyChart = new Chart(document.getElementById('monthlyChart'), {
                         type: 'bar',
                         data: {
                             labels: monthlyLabels,
-                            datasets: [{
-                                label: 'Total Sales',
-                                backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                                borderColor: 'rgba(54, 162, 235, 1)',
-                                borderWidth: 1,
-                                data: monthlyData
-                            }]
+                            datasets: [
+                                {
+                                    label: 'Total Sales',
+                                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                                    borderColor: 'rgba(54, 162, 235, 1)',
+                                    borderWidth: 1,
+                                    data: monthlySalesData
+                                },
+                                {
+                                    label: 'Total Cost',
+                                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                                    borderColor: 'rgba(255, 99, 132, 1)',
+                                    borderWidth: 1,
+                                    data: monthlyCostData
+                                },
+                                {
+                                    label: 'Total Profit',
+                                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                                    borderColor: 'rgba(75, 192, 192, 1)',
+                                    borderWidth: 1,
+                                    data: monthlyProfitData
+                                }
+                            ]
                         },
                         options: {
                             scales: {
@@ -178,29 +226,53 @@
                         }
                     });
 
+
                     // Yearly Sales Chart
                     var yearlyLabels = [];
-                    var yearlyData = [];
+                    var yearlySalesData = [];
+                    var yearlyCostData = [];
+                    var yearlyProfitData = [];
+
                     {% for kpi in yearly_kpi %}
                         yearlyLabels.push('{{ kpi.year }}');
-                        yearlyData.push({{ kpi.total_sales }});
+                        yearlySalesData.push({{ kpi.total_sales }});
+                        yearlyCostData.push({{ kpi.total_cost }});
+                        yearlyProfitData.push({{ kpi.total_profit }});
                     {% endfor %}
 
                     // Reverse the order of the data
                     yearlyLabels.reverse();
-                    yearlyData.reverse();
+                    yearlySalesData.reverse();
+                    yearlyCostData.reverse();
+                    yearlyProfitData.reverse();
 
                     var yearlyChart = new Chart(document.getElementById('yearlyChart'), {
                         type: 'bar',
                         data: {
                             labels: yearlyLabels,
-                            datasets: [{
-                                label: 'Total Sales',
-                                backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                                borderColor: 'rgba(75, 192, 192, 1)',
-                                borderWidth: 1,
-                                data: yearlyData
-                            }]
+                            datasets: [
+                                {
+                                    label: 'Total Sales',
+                                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                                    borderColor: 'rgba(54, 162, 235, 1)',
+                                    borderWidth: 1,
+                                    data: yearlySalesData
+                                },
+                                {
+                                    label: 'Total Cost',
+                                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                                    borderColor: 'rgba(255, 99, 132, 1)',
+                                    borderWidth: 1,
+                                    data: yearlyCostData
+                                },
+                                {
+                                    label: 'Total Profit',
+                                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                                    borderColor: 'rgba(75, 192, 192, 1)',
+                                    borderWidth: 1,
+                                    data: yearlyProfitData
+                                }
+                            ]
                         },
                         options: {
                             scales: {
@@ -212,6 +284,7 @@
                             }
                         }
                     });
+
                 </script>
             </div>
         {% else %}

@@ -63,10 +63,3 @@ class OrderTable(models.Model):
     class Meta:
         unique_together = ('table_id', 'supplier', 'menu', 'order_date', 'order_id')
 
-class UserProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return self.user.username
-    
